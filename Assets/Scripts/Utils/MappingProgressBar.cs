@@ -10,6 +10,7 @@ public class MappingProgressBar : MonoBehaviour
 	[Header("Guide")]
 	[SerializeField] private string controlType;
 	public string gameController;
+	[SerializeField] private Text text;
 	
 	[Header("Colors")]
 	[SerializeField] private Color m_MainColor = Color.white;
@@ -47,6 +48,7 @@ public class MappingProgressBar : MonoBehaviour
 		{
 			for (int i = 0; i < m_NumberOfSegments; i++)
 			{
+				text.text = gameController + m_FillAmount;
 				m_ProgressToFill [i].color = m_FillColor;
 				m_ProgressToFill [i].fillAmount = (m_FillAmount * ((m_EndAngle-m_StartAngle)/360)) - m_SizeOfSegment * i;
 			}
