@@ -3,7 +3,7 @@
     "m_SelectedPackage": {
         "deviceId": "PA7J50PGFA220010W",
         "name": "com.DefaultCompany.SyncsenseTest",
-        "processId": 32049,
+        "processId": 6784,
         "exited": false
     },
     "m_SelectedPriority": 0,
@@ -11,37 +11,43 @@
         {
             "deviceId": "PA7J50PGFA220010W",
             "name": "com.DefaultCompany.SyncsenseTest",
-            "processId": 15486,
-            "exited": true
-        },
-        {
-            "deviceId": "PA7J50PGFA220010W",
-            "name": "com.DefaultCompany.SyncsenseTest",
-            "processId": 8623,
-            "exited": true
-        },
-        {
-            "deviceId": "PA7J50PGFA220010W",
-            "name": "com.DefaultCompany.SyncsenseTest",
-            "processId": 15487,
-            "exited": true
-        },
-        {
-            "deviceId": "PA7J50PGFA220010W",
-            "name": "com.DefaultCompany.SyncsenseTest",
-            "processId": 29503,
-            "exited": true
-        },
-        {
-            "deviceId": "PA7J50PGFA220010W",
-            "name": "com.DefaultCompany.SyncsenseTest",
             "processId": 29516,
-            "exited": false
+            "exited": true
         },
         {
             "deviceId": "PA7J50PGFA220010W",
             "name": "com.DefaultCompany.SyncsenseTest",
             "processId": 32049,
+            "exited": true
+        },
+        {
+            "deviceId": "PA7J50PGFA220010W",
+            "name": "com.DefaultCompany.SyncsenseTest",
+            "processId": 32051,
+            "exited": true
+        },
+        {
+            "deviceId": "PA7J50PGFA220010W",
+            "name": "com.DefaultCompany.SyncsenseTest",
+            "processId": 6273,
+            "exited": true
+        },
+        {
+            "deviceId": "PA7J50PGFA220010W",
+            "name": "com.DefaultCompany.SyncsenseTest",
+            "processId": 6780,
+            "exited": false
+        },
+        {
+            "deviceId": "PA7J50PGFA220010W",
+            "name": "com.DefaultCompany.SyncsenseTest",
+            "processId": 6783,
+            "exited": false
+        },
+        {
+            "deviceId": "PA7J50PGFA220010W",
+            "name": "com.DefaultCompany.SyncsenseTest",
+            "processId": 6784,
             "exited": false
         }
     ],

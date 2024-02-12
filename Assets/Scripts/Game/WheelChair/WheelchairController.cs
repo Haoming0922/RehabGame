@@ -10,6 +10,8 @@ public class WheelchairController : MonoBehaviour
     public Rigidbody wheelchairRigidbody; // Reference to the wheelchair's Rigidbody
     public float maxLeftWheelRotationSpeed = 30f; // Maximum rotation speed for left wheel
     public float maxRightWheelRotationSpeed = 30f; // Maximum rotation speed for right wheel
+    public float forwardFactor;
+    public float turningFactor;
     
     private bool isRunning = false;
     
@@ -88,8 +90,8 @@ public class WheelchairController : MonoBehaviour
         // Apply the movement and turning to the wheelchair's Rigidbody
         if (wheelchairRigidbody != null && !wheelchairRigidbody.isKinematic)
         {
-            wheelchairRigidbody.AddRelativeForce(movement, ForceMode.Force);
-            wheelchairRigidbody.AddTorque(turning, ForceMode.Force);
+            wheelchairRigidbody.AddRelativeForce(movement * forwardFactor, ForceMode.Force);
+            wheelchairRigidbody.AddTorque(turning * turningFactor, ForceMode.Force);
         }
     }
 }

@@ -39,8 +39,6 @@ public class MappingProgressBar : MonoBehaviour
     private void Awake()
     {
 	    SetProgressBar();		
-	    SyncsenseSensorManager.OnSensorDataReceivedEvent -= ProgressGrow;
-	    SyncsenseSensorManager.OnSensorDataReceivedEvent += ProgressGrow;
     }
 	
 	private void Update() {
@@ -48,7 +46,7 @@ public class MappingProgressBar : MonoBehaviour
 		{
 			for (int i = 0; i < m_NumberOfSegments; i++)
 			{
-				text.text = gameController + m_FillAmount;
+				// text.text = gameController + m_FillAmount;
 				m_ProgressToFill [i].color = m_FillColor;
 				m_ProgressToFill [i].fillAmount = (m_FillAmount * ((m_EndAngle-m_StartAngle)/360)) - m_SizeOfSegment * i;
 			}
@@ -71,6 +69,14 @@ public class MappingProgressBar : MonoBehaviour
 	public void SetProgressBarActive(bool active)
 	{
 		isActive = active;
+		if (active)
+		{
+			SyncsenseSensorManager.OnSensorDataReceivedEvent += ProgressGrow;
+		}
+		else
+		{
+			SyncsenseSensorManager.OnSensorDataReceivedEvent -= ProgressGrow;
+		}
 	}
 	
 	public bool IsFinished()
