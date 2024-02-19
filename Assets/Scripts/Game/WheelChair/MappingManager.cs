@@ -13,13 +13,13 @@ public class MappingManager : MonoBehaviour
 
 	private void Awake()
 	{
-		guideText.text = "Please roll both wheels forward to start...";
 		StartCoroutine(MapingSensor());
 	}
 	
 	IEnumerator MapingSensor()
 	{
-		yield return new WaitForSeconds(3);
+		guideText.text = "Please roll both wheels forward to start...";
+		yield return new WaitForSeconds(5);
 		for (int mappingIndex = 0; mappingIndex < mappingList.Count; mappingIndex++)
 		{
 			MappingProgressBar progressBar = mappingList[mappingIndex].GetComponent<MappingProgressBar>();

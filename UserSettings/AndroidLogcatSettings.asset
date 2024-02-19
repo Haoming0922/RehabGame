@@ -1,9 +1,9 @@
 {
     "m_SelectedDeviceId": "PA7J50PGFA220010W",
     "m_SelectedPackage": {
-        "deviceId": "PA7J50PGFA220010W",
-        "name": "com.DefaultCompany.SyncsenseTest",
-        "processId": 6784,
+        "deviceId": "",
+        "name": "",
+        "processId": 0,
         "exited": false
     },
     "m_SelectedPriority": 0,
@@ -11,44 +11,26 @@
         {
             "deviceId": "PA7J50PGFA220010W",
             "name": "com.DefaultCompany.SyncsenseTest",
-            "processId": 29516,
-            "exited": true
-        },
-        {
-            "deviceId": "PA7J50PGFA220010W",
-            "name": "com.DefaultCompany.SyncsenseTest",
-            "processId": 32049,
-            "exited": true
-        },
-        {
-            "deviceId": "PA7J50PGFA220010W",
-            "name": "com.DefaultCompany.SyncsenseTest",
-            "processId": 32051,
-            "exited": true
-        },
-        {
-            "deviceId": "PA7J50PGFA220010W",
-            "name": "com.DefaultCompany.SyncsenseTest",
-            "processId": 6273,
-            "exited": true
-        },
-        {
-            "deviceId": "PA7J50PGFA220010W",
-            "name": "com.DefaultCompany.SyncsenseTest",
             "processId": 6780,
-            "exited": false
+            "exited": true
         },
         {
             "deviceId": "PA7J50PGFA220010W",
             "name": "com.DefaultCompany.SyncsenseTest",
             "processId": 6783,
-            "exited": false
+            "exited": true
         },
         {
             "deviceId": "PA7J50PGFA220010W",
             "name": "com.DefaultCompany.SyncsenseTest",
             "processId": 6784,
-            "exited": false
+            "exited": true
+        },
+        {
+            "deviceId": "PA7J50PGFA220010W",
+            "name": "com.DefaultCompany.SyncsenseTest",
+            "processId": 32444,
+            "exited": true
         }
     ],
     "m_Tags": {

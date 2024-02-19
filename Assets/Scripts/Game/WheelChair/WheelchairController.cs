@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Collections;
@@ -8,26 +9,23 @@ public class WheelchairController : MonoBehaviour
     public GameObject leftWheel;
     public GameObject rightWheel;
     public Rigidbody wheelchairRigidbody; // Reference to the wheelchair's Rigidbody
-    public float maxLeftWheelRotationSpeed = 30f; // Maximum rotation speed for left wheel
-    public float maxRightWheelRotationSpeed = 30f; // Maximum rotation speed for right wheel
+    public float maxLeftWheelRotationSpeed = 25f; // Maximum rotation speed for left wheel
+    public float maxRightWheelRotationSpeed = 25f; // Maximum rotation speed for right wheel
     public float forwardFactor;
     public float turningFactor;
-    
-    private bool isRunning = false;
     
     private float leftSpeed = 0;
     private float rightSpeed = 0;
     private float leftInput = 0;
     private float rightInput = 0;
+    
+    private void Awake()
+    {
+        // StartCoroutine(GetSensorInput());
+    }
 
     void Update()
     {
-        StartCoroutine(GetSensorInput());
-        
-        // // Add keyboard controls
-        // leftInput = GetKeyboardInput(KeyCode.Q, KeyCode.A); // Test on "Q" and "A" keys
-        // rightInput = GetKeyboardInput(KeyCode.P, KeyCode.L); // Test on "P" and "L" keys
-
         leftSpeed = leftInput * maxLeftWheelRotationSpeed;
         rightSpeed = rightInput * maxRightWheelRotationSpeed;
 
@@ -37,35 +35,31 @@ public class WheelchairController : MonoBehaviour
         // Now you can use leftWheelSpeed and rightWheelSpeed to determine the movement and turning
         ApplyMovement(leftSpeed, rightSpeed);
     }
+    
 
     IEnumerator GetSensorInput()
     {
-        isRunning = true;
         while (true)
         {
             leftInput = GameDataManager.Instance.GetData("Left", Calculation.ToRotationData);
             rightInput = GameDataManager.Instance.GetData("Right", Calculation.ToRotationData);
             
-            yield return new WaitForSeconds(0.1f);
+            yield return new WaitForSeconds(0.05f);
         }
     }
 
     
-    // Function to get keyboard input
-    private float GetKeyboardInput(KeyCode forwardKey, KeyCode backwardKey)
+    
+    // keyboard controls
+    private void OnLeftKeyBoard(InputValue input)
     {
-        float input = 0;
-        if (Input.GetKey(forwardKey))
-        {
-            input = 1;
-        }
-        else if (Input.GetKey(backwardKey))
-        {
-            input = -1;
-        }
-        return input;
+        leftInput = input.Get<float>();
     }
-
+    private void OnRightKeyBoard(InputValue input)
+    {
+        rightInput = input.Get<float>();
+    }
+    
     // Function to rotate the wheel
     private void RotateWheel(GameObject wheel, float speed)
     {

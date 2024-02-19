@@ -11,7 +11,7 @@ public class GameDataManager : Singleton<GameDataManager>
     private IDictionary<string, Queue<SensorDataReceived>> gameDataWindowDict = new Dictionary<string, Queue<SensorDataReceived>>(); // name -> data
     private IDictionary<string, SensorDataReceived> gameDataDict = new Dictionary<string, SensorDataReceived>(); // name -> data
     public delegate float DataTransform(SensorDataReceived data);
-    private int windowSize = 15;
+    private int windowSize = 5;
 
     // Rotation
     private IDictionary<string, RotationType> rotationCalibrationDict = new Dictionary<string, RotationType>();

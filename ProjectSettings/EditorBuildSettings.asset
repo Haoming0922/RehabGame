@@ -6,17 +6,20 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 0
-    path: Assets/Scenes/SampleScene.unity
-    guid: 9fc0d4010bbf28b4594072e72b8655ab
-  - enabled: 1
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
     path: Assets/Scenes/Start.unity
     guid: 32807bfc7167bde479c6010ab710cb3f
   - enabled: 0
     path: Assets/Scenes/Car.unity
     guid: 84729eeda748340d0955715b6a50b370
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/WheelChair.unity
     guid: 10c9f91ae883a8748912645f174d023f
+  - enabled: 1
+    path: Assets/XR Interaction Toolkit/2.2.0/Starter Assets/DemoScene.unity
+    guid: 319dafa5c80f29f428dc1e0d03f04177
   m_configObjects:
     Unity.XR.PICO.LivePreview.Settings: {fileID: 11400000, guid: 015916cee2c22374a9f39c4659a6ebf2, type: 2}
     Unity.XR.PXR.Settings: {fileID: 11400000, guid: c11cda615183cb1459c8e60543bf35bd, type: 2}

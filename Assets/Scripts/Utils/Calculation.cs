@@ -20,7 +20,7 @@ public class Calculation
 
     public static float ToRotationData(SensorDataReceived data)
     {
-        float threshold = 15f;
+        float threshold = 20f;
         switch (GameDataManager.Instance.GetRotationCalibration(data.deviceAddress))    
         {
             case RotationType.XPositive:

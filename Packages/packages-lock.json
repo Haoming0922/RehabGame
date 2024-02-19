@@ -84,9 +84,9 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.pico.livepreview": {
-      "version": "file:C:/Users/s220053/Haoming/PICO Unity Live Preview Plugin (Experiment)",
+      "version": "file:PICO Unity Live Preview Plugin (Experiment)",
       "depth": 0,
-      "source": "local",
+      "source": "embedded",
       "dependencies": {
         "com.unity.xr.management": "4.0.0"
       }
@@ -227,9 +227,9 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.xr.picoxr": {
-      "version": "file:C:/Users/s220053/Haoming/PICO Unity Integration SDK 240",
+      "version": "file:PICO Unity Integration SDK 240",
       "depth": 0,
-      "source": "local",
+      "source": "embedded",
       "dependencies": {
         "com.unity.xr.management": "4.0.0",
         "com.unity.xr.interaction.toolkit": "2.0.0"
