@@ -22,14 +22,29 @@ public class WheelchairController : MonoBehaviour
 
     public TextMeshProUGUI textLeft;
     public TextMeshProUGUI textRight;
+
+    private WheelChairInput input; 
+    private InputAction leftAction;
+    private InputAction rightAction;
     
     private void Awake()
     {
         // StartCoroutine(GetSensorInput());
+        input = new WheelChairInput();
+        leftAction = input.Wheelchair.LeftInput;
+        rightAction = input.Wheelchair.RightInput;
+        leftAction.Enable();
+        rightAction.Enable();
     }
 
     void Update()
     {
+        // leftInput = leftAction.ReadValue<Vector2>()[1];
+        // rightInput = rightAction.ReadValue<Vector2>()[1];
+        
+        leftInput = leftAction.ReadValue<float>();
+        rightInput = rightAction.ReadValue<float>();
+        
         Debug.Log("Left: " + leftInput + ", Right: " + rightInput);
         textLeft.text = "Left: " + leftInput;
         textRight.text = "Right: " + rightInput;
@@ -56,41 +71,16 @@ public class WheelchairController : MonoBehaviour
     //     }
     // }
 
-    
-        
-    // sensor controls
-    private void OnLeftSensor(InputValue input)
-    {
-        leftInput = input.Get<float>();
-    }
-    private void OnRightSensor(InputValue input)
-    {
-        rightInput = input.Get<float>();
-    }
-    
-    
-    
-    // keyboard controls
-    private void OnLeftKeyBoard(InputValue input)
-    {
-        leftInput = input.Get<float>();
-    }
-    private void OnRightKeyBoard(InputValue input)
-    {
-        rightInput = input.Get<float>();
-    }
-    
-    
-    // joyStick controls
-    private void OnLeftThumbStick(InputValue input)
-    {
-        leftInput = input.Get<Vector2>()[1];
-    }
-    private void OnRightThumbStick(InputValue input)
-    {
-        rightInput = input.Get<Vector2>()[1];
-    }
-    
+    // private void OnLeftInput(InputValue value)
+    // {
+    //     leftInput = value.Get<float>();
+    //     leftInput = value.Get<Vector2>()[1];
+    // }
+    // private void OnRightInput(InputValue value)
+    // {
+    //     rightInput = value.Get<float>();
+    //     rightInput = value.Get<Vector2>()[1];
+    // }
     
     // Function to rotate the wheel
     private void RotateWheel(GameObject wheel, float speed)
