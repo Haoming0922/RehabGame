@@ -1,4 +1,5 @@
 ﻿using System;
+using UnityEngine;
 
 public class SensorDataReceived: RawDataReceived
 {
@@ -9,7 +10,19 @@ public class SensorDataReceived: RawDataReceived
     public float gyroX;
     public float gyroY;
     public float gyroZ;
-
+    
+    public Vector3 acceleration
+    {
+        get { return new Vector3(accX, accY, accZ); }
+        set { accX = value.x; accY = value.y; accZ = value.z; }
+    }
+    
+    public Vector3 angularVelocity
+    {
+        get { return new Vector3(gyroX, gyroY, gyroZ); }
+        set { gyroX = value.x; gyroY = value.y; gyroZ = value.z; }
+    }
+    
     public SensorDataReceived()
     {
         deviceAddress = "";

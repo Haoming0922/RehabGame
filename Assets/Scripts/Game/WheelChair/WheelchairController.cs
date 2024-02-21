@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Collections;
+using TMPro;
 using UnityEngine.UI;
 
 public class WheelchairController : MonoBehaviour
@@ -18,6 +19,9 @@ public class WheelchairController : MonoBehaviour
     private float rightSpeed = 0;
     private float leftInput = 0;
     private float rightInput = 0;
+
+    public TextMeshProUGUI textLeft;
+    public TextMeshProUGUI textRight;
     
     private void Awake()
     {
@@ -26,6 +30,10 @@ public class WheelchairController : MonoBehaviour
 
     void Update()
     {
+        Debug.Log("Left: " + leftInput + ", Right: " + rightInput);
+        textLeft.text = "Left: " + leftInput;
+        textRight.text = "Right: " + rightInput;
+     
         leftSpeed = leftInput * maxLeftWheelRotationSpeed;
         rightSpeed = rightInput * maxRightWheelRotationSpeed;
 
@@ -37,17 +45,29 @@ public class WheelchairController : MonoBehaviour
     }
     
 
-    IEnumerator GetSensorInput()
-    {
-        while (true)
-        {
-            leftInput = GameDataManager.Instance.GetData("Left", Calculation.ToRotationData);
-            rightInput = GameDataManager.Instance.GetData("Right", Calculation.ToRotationData);
-            
-            yield return new WaitForSeconds(0.05f);
-        }
-    }
+    // IEnumerator GetSensorInput()
+    // {
+    //     while (true)
+    //     {
+    //         leftInput = GameDataManager.Instance.GetData("Left", Calculation.ToRotationData);
+    //         rightInput = GameDataManager.Instance.GetData("Right", Calculation.ToRotationData);
+    //         
+    //         yield return new WaitForSeconds(0.05f);
+    //     }
+    // }
 
+    
+        
+    // sensor controls
+    private void OnLeftSensor(InputValue input)
+    {
+        leftInput = input.Get<float>();
+    }
+    private void OnRightSensor(InputValue input)
+    {
+        rightInput = input.Get<float>();
+    }
+    
     
     
     // keyboard controls
@@ -59,6 +79,18 @@ public class WheelchairController : MonoBehaviour
     {
         rightInput = input.Get<float>();
     }
+    
+    
+    // joyStick controls
+    private void OnLeftThumbStick(InputValue input)
+    {
+        leftInput = input.Get<Vector2>()[1];
+    }
+    private void OnRightThumbStick(InputValue input)
+    {
+        rightInput = input.Get<Vector2>()[1];
+    }
+    
     
     // Function to rotate the wheel
     private void RotateWheel(GameObject wheel, float speed)

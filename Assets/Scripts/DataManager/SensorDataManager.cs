@@ -41,7 +41,7 @@ public class SensorDataManager : Singleton<SensorDataManager>
         SyncsenseSensorManager.OnDeviceConnectionStateChangeEvent += OnDeviceConnectionStateChangeEvent;
         SyncsenseSensorManager.OnServicesDiscoveredEvent += OnOnServicesDiscoveredEvent;
         
-        SyncsenseSensorManager.OnSensorDataReceivedEvent += OnSensorDataReceivedEvent;
+        // SyncsenseSensorManager.OnSensorDataReceivedEvent += OnSensorDataReceivedEvent;
         // SyncsenseSensorManager.OnBatteryDataReceivedEvent += OnBatteryDataReceivedEvent;
         
         SyncsenseSensorManager.Instance.StartScan();
@@ -59,7 +59,7 @@ public class SensorDataManager : Singleton<SensorDataManager>
         SyncsenseSensorManager.OnDeviceConnectionStateChangeEvent -= OnDeviceConnectionStateChangeEvent;
         SyncsenseSensorManager.OnServicesDiscoveredEvent -= OnOnServicesDiscoveredEvent;
         
-        SyncsenseSensorManager.OnSensorDataReceivedEvent -= OnSensorDataReceivedEvent;
+        // SyncsenseSensorManager.OnSensorDataReceivedEvent -= OnSensorDataReceivedEvent;
         // SyncsenseSensorManager.OnBatteryDataReceivedEvent -= OnBatteryDataReceivedEvent;
     }
 

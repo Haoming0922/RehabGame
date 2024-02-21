@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class GameDataManager : Singleton<GameDataManager>
 {
@@ -11,6 +12,9 @@ public class GameDataManager : Singleton<GameDataManager>
     private IDictionary<string, Queue<SensorDataReceived>> gameDataWindowDict = new Dictionary<string, Queue<SensorDataReceived>>(); // name -> data
     private IDictionary<string, SensorDataReceived> gameDataDict = new Dictionary<string, SensorDataReceived>(); // name -> data
     public delegate float DataTransform(SensorDataReceived data);
+    public static Action<string,string> sensorAdded;
+    public static Action<string> sensorRemoved;
+    
     private int windowSize = 5;
 
     // Rotation
@@ -58,11 +62,12 @@ public class GameDataManager : Singleton<GameDataManager>
     
     private void SetGameData(string deviceAddress)
     {
-        string gameConroller = sensorMapping[deviceAddress];
+        string gameController = sensorMapping[deviceAddress];
         SensorDataReceived filterData = Calculation.AverageQueue(gameDataWindowDict[deviceAddress]);
-        gameDataDict[gameConroller] = filterData;
+        gameDataDict[gameController] = filterData;
     }
 
+    
     public void SetRotationCalibration(string deviceAddress, RotationType rotation)
     {
         if(!rotationCalibrationDict.ContainsKey(deviceAddress)) rotationCalibrationDict.Add(deviceAddress,rotation);
@@ -72,5 +77,6 @@ public class GameDataManager : Singleton<GameDataManager>
     {
         return rotationCalibrationDict[deviceAddress];
     }
+    
 
 }

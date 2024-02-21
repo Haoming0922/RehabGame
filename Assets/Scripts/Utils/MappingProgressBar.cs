@@ -54,6 +54,7 @@ public class MappingProgressBar : MonoBehaviour
 			{
 				if (GameDataManager.Instance.sensorMapping.TryAdd(currentMapping, gameController))
 				{
+					GameDataManager.sensorAdded?.Invoke(gameController, currentMapping);
 					SetData(currentMapping);
 					isFinished = true;
 				}
@@ -137,7 +138,7 @@ public class MappingProgressBar : MonoBehaviour
 				currentMapping = data.deviceAddress;
 				
 				m_FillAmount += 0.01f;
-				AddData(data);
+				HandleData(data);
             }
 			else
 			{
@@ -152,7 +153,7 @@ public class MappingProgressBar : MonoBehaviour
 
 
 
-	private void AddData(SensorDataReceived data)
+	private void HandleData(SensorDataReceived data)
 	{
 		if (controlType == "Rotation")
 		{
