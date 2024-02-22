@@ -14,9 +14,8 @@ public class WheelchairController : MonoBehaviour
     public float maxRightWheelRotationSpeed = 25f; // Maximum rotation speed for right wheel
     public float forwardFactor;
     public float turningFactor;
-    
-    private float leftSpeed = 0;
-    private float rightSpeed = 0;
+
+    // final input
     private float leftInput = 0;
     private float rightInput = 0;
 
@@ -29,28 +28,39 @@ public class WheelchairController : MonoBehaviour
     
     private void Awake()
     {
-        // StartCoroutine(GetSensorInput());
         input = new WheelChairInput();
-        leftAction = input.Wheelchair.LeftInput;
-        rightAction = input.Wheelchair.RightInput;
+        leftAction = input.Move.LeftInput;
+        rightAction = input.Move.RightInput;
+    }
+
+    private void OnEnable()
+    {
         leftAction.Enable();
         rightAction.Enable();
     }
 
+    private void OnDisable()
+    {
+        leftAction.Disable();
+        rightAction.Disable();
+    }
+
     void Update()
     {
-        // leftInput = leftAction.ReadValue<Vector2>()[1];
-        // rightInput = rightAction.ReadValue<Vector2>()[1];
-        
-        leftInput = leftAction.ReadValue<float>();
-        rightInput = rightAction.ReadValue<float>();
+        float leftInput1 = leftAction.ReadValue<Vector2>()[1];
+        float rightInput1 = rightAction.ReadValue<Vector2>()[1];
+        float leftInput2 = GameDataManager.Instance != null ? GameDataManager.Instance.GetData("Left", Calculation.ToRotationData) : 0;
+        float rightInput2 = GameDataManager.Instance != null ? GameDataManager.Instance.GetData("Right", Calculation.ToRotationData): 0;
+
+        leftInput = Mathf.Abs(leftInput1) > Mathf.Abs(leftInput2) ? leftInput1 : leftInput2;
+        rightInput = Mathf.Abs(rightInput1) > Mathf.Abs(rightInput2) ? rightInput1 : rightInput2;
         
         Debug.Log("Left: " + leftInput + ", Right: " + rightInput);
         textLeft.text = "Left: " + leftInput;
         textRight.text = "Right: " + rightInput;
      
-        leftSpeed = leftInput * maxLeftWheelRotationSpeed;
-        rightSpeed = rightInput * maxRightWheelRotationSpeed;
+        float leftSpeed = leftInput * maxLeftWheelRotationSpeed;
+        float rightSpeed = rightInput * maxRightWheelRotationSpeed;
 
         RotateWheel(leftWheel, leftSpeed);
         RotateWheel(rightWheel, rightSpeed);
@@ -58,18 +68,6 @@ public class WheelchairController : MonoBehaviour
         // Now you can use leftWheelSpeed and rightWheelSpeed to determine the movement and turning
         ApplyMovement(leftSpeed, rightSpeed);
     }
-    
-
-    // IEnumerator GetSensorInput()
-    // {
-    //     while (true)
-    //     {
-    //         leftInput = GameDataManager.Instance.GetData("Left", Calculation.ToRotationData);
-    //         rightInput = GameDataManager.Instance.GetData("Right", Calculation.ToRotationData);
-    //         
-    //         yield return new WaitForSeconds(0.05f);
-    //     }
-    // }
 
     // private void OnLeftInput(InputValue value)
     // {

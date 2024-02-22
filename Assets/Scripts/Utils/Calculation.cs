@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using Unity.VisualScripting.Dependencies.NCalc;
 using UnityEngine;
 
@@ -72,6 +73,5 @@ public class Calculation
         }
         return sum / dataQueue.Count;
     }
-    
 
 }

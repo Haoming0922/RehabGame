@@ -54,7 +54,7 @@ public class MappingProgressBar : MonoBehaviour
 			{
 				if (GameDataManager.Instance.sensorMapping.TryAdd(currentMapping, gameController))
 				{
-					GameDataManager.sensorAdded?.Invoke(gameController, currentMapping);
+					// GameDataManager.sensorAdded?.Invoke(gameController, currentMapping);
 					SetData(currentMapping);
 					isFinished = true;
 				}

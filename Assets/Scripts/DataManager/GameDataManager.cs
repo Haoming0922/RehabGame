@@ -12,8 +12,9 @@ public class GameDataManager : Singleton<GameDataManager>
     private IDictionary<string, Queue<SensorDataReceived>> gameDataWindowDict = new Dictionary<string, Queue<SensorDataReceived>>(); // name -> data
     private IDictionary<string, SensorDataReceived> gameDataDict = new Dictionary<string, SensorDataReceived>(); // name -> data
     public delegate float DataTransform(SensorDataReceived data);
-    public static Action<string,string> sensorAdded;
-    public static Action<string> sensorRemoved;
+    public DataTransform dataTransform;
+    // public static Action<string,string> sensorAdded;
+    // public static Action<string> sensorRemoved;
     
     private int windowSize = 5;
 
@@ -33,7 +34,12 @@ public class GameDataManager : Singleton<GameDataManager>
 
     public float GetData(string controller, DataTransform dataTransform)
     {
-        return dataTransform(gameDataDict[controller]);
+        return gameDataDict.ContainsKey(controller) ? dataTransform(gameDataDict[controller]) : 0;
+    }
+    
+    public SensorDataReceived GetData(string controller)
+    {
+        return gameDataDict.ContainsKey(controller) ? gameDataDict[controller] : new SensorDataReceived();
     }
     
 
