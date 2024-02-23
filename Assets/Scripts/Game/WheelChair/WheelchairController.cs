@@ -25,24 +25,28 @@ public class WheelchairController : MonoBehaviour
     private WheelChairInput input; 
     private InputAction leftAction;
     private InputAction rightAction;
+    private InputAction joyStickAction;
     
     private void Awake()
     {
         input = new WheelChairInput();
         leftAction = input.Move.LeftInput;
         rightAction = input.Move.RightInput;
+        joyStickAction = input.Move.JoyStick;
     }
 
     private void OnEnable()
     {
         leftAction.Enable();
         rightAction.Enable();
+        joyStickAction.Enable();
     }
 
     private void OnDisable()
     {
         leftAction.Disable();
         rightAction.Disable();
+        joyStickAction.Disable();
     }
 
     void Update()
@@ -52,8 +56,14 @@ public class WheelchairController : MonoBehaviour
         float leftInput2 = GameDataManager.Instance != null ? GameDataManager.Instance.GetData("Left", Calculation.ToRotationData) : 0;
         float rightInput2 = GameDataManager.Instance != null ? GameDataManager.Instance.GetData("Right", Calculation.ToRotationData): 0;
 
+        Vector2 joyStick = joyStickAction.ReadValue<Vector2>();
+        float leftInput3 = joyStick.y >= 0 ? joyStick.y + joyStick.x : joyStick.y - joyStick.x;
+        float rightInput3 = joyStick.y >= 0 ? joyStick.y - joyStick.x : joyStick.y + joyStick.x;
+
         leftInput = Mathf.Abs(leftInput1) > Mathf.Abs(leftInput2) ? leftInput1 : leftInput2;
+        leftInput = Mathf.Abs(leftInput) > Mathf.Abs(leftInput3) ? leftInput : leftInput3;
         rightInput = Mathf.Abs(rightInput1) > Mathf.Abs(rightInput2) ? rightInput1 : rightInput2;
+        rightInput = Mathf.Abs(rightInput) > Mathf.Abs(rightInput3) ? rightInput : rightInput3;
         
         Debug.Log("Left: " + leftInput + ", Right: " + rightInput);
         textLeft.text = "Left: " + leftInput;
