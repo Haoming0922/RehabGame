@@ -16,7 +16,7 @@ public class GameDataManager : Singleton<GameDataManager>
     // public static Action<string,string> sensorAdded;
     // public static Action<string> sensorRemoved;
     
-    private int windowSize = 5;
+    public int windowSize = 5;
 
     // Rotation
     private IDictionary<string, RotationType> rotationCalibrationDict = new Dictionary<string, RotationType>();

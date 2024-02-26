@@ -9,7 +9,7 @@ public abstract class Singleton<T> : MonoBehaviour where T : MonoBehaviour
     {
         if (instance != null && instance != this)
         {
-            throw new System.Exception("Object of type " + typeof(T).ToString() + " is already used in another game object");
+            Destroy(this);
         }
         else
         {

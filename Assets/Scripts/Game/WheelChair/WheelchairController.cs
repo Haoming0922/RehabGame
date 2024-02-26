@@ -10,10 +10,10 @@ public class WheelchairController : MonoBehaviour
     public GameObject leftWheel;
     public GameObject rightWheel;
     public Rigidbody wheelchairRigidbody; // Reference to the wheelchair's Rigidbody
-    public float maxLeftWheelRotationSpeed = 25f; // Maximum rotation speed for left wheel
-    public float maxRightWheelRotationSpeed = 25f; // Maximum rotation speed for right wheel
     public float forwardFactor;
     public float turningFactor;
+    
+    private float maxWheelRotationSpeed = 15f; // Maximum rotation speed for wheel
 
     // final input
     private float leftInput = 0;
@@ -58,7 +58,9 @@ public class WheelchairController : MonoBehaviour
 
         Vector2 joyStick = joyStickAction.ReadValue<Vector2>();
         float leftInput3 = joyStick.y >= 0 ? joyStick.y + joyStick.x : joyStick.y - joyStick.x;
+        leftInput3 = Mathf.Sign(leftInput3) * Mathf.Min(Mathf.Abs(leftInput3), 1);
         float rightInput3 = joyStick.y >= 0 ? joyStick.y - joyStick.x : joyStick.y + joyStick.x;
+        rightInput3 = Mathf.Sign(rightInput3) * Mathf.Min(Mathf.Abs(rightInput3), 1);
 
         leftInput = Mathf.Abs(leftInput1) > Mathf.Abs(leftInput2) ? leftInput1 : leftInput2;
         leftInput = Mathf.Abs(leftInput) > Mathf.Abs(leftInput3) ? leftInput : leftInput3;
@@ -66,17 +68,14 @@ public class WheelchairController : MonoBehaviour
         rightInput = Mathf.Abs(rightInput) > Mathf.Abs(rightInput3) ? rightInput : rightInput3;
         
         Debug.Log("Left: " + leftInput + ", Right: " + rightInput);
-        textLeft.text = "Left: " + leftInput;
-        textRight.text = "Right: " + rightInput;
-     
-        float leftSpeed = leftInput * maxLeftWheelRotationSpeed;
-        float rightSpeed = rightInput * maxRightWheelRotationSpeed;
+        textLeft.text = "Left  " + leftInput;
+        textRight.text = "Right  " + rightInput;
 
-        RotateWheel(leftWheel, leftSpeed);
-        RotateWheel(rightWheel, rightSpeed);
+        RotateWheel(leftWheel, leftInput * maxWheelRotationSpeed);
+        RotateWheel(rightWheel, rightInput * maxWheelRotationSpeed);
 
         // Now you can use leftWheelSpeed and rightWheelSpeed to determine the movement and turning
-        ApplyMovement(leftSpeed, rightSpeed);
+        ApplyMovement(leftInput, rightInput);
     }
 
     // private void OnLeftInput(InputValue value)

@@ -11,10 +11,10 @@ public class WheelchairController2 : MonoBehaviour
     public GameObject leftWheel;
     public GameObject rightWheel;
     public Rigidbody wheelchairRigidbody; // Reference to the wheelchair's Rigidbody
-    public float maxLeftWheelRotationSpeed = 25f; // Maximum rotation speed for left wheel
-    public float maxRightWheelRotationSpeed = 25f; // Maximum rotation speed for right wheel
     public float forwardFactor;
     public float turningFactor;
+    
+    private float maxWheelRotationSpeed = 15f; // Maximum rotation speed for wheel
 
     // final input
     private float leftInput = 0;
@@ -100,17 +100,14 @@ public class WheelchairController2 : MonoBehaviour
                     ", leftInput: " + leftInput + ", rightInput: " + rightInput
         );
 
-        textLeft.text = "Left: " + leftInput;
-        textRight.text = "Right: " + rightInput;
-     
-        float leftSpeed = leftInput * maxLeftWheelRotationSpeed;
-        float rightSpeed = rightInput * maxRightWheelRotationSpeed;
+        textLeft.text = "Left  " + leftInput;
+        textRight.text = "Right  " + rightInput;
 
-        RotateWheel(leftWheel, leftSpeed);
-        RotateWheel(rightWheel, rightSpeed);
+        RotateWheel(leftWheel, leftInput * maxWheelRotationSpeed);
+        RotateWheel(rightWheel, rightInput * maxWheelRotationSpeed);
 
         // Now you can use leftWheelSpeed and rightWheelSpeed to determine the movement and turning
-        ApplyMovement(leftSpeed, rightSpeed);
+        ApplyMovement(leftInput, rightInput);
     }
     
     
