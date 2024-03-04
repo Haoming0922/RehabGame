@@ -18,7 +18,7 @@ EditorBuildSettings:
     path: Assets/Scenes/WheelChair.unity
     guid: 10c9f91ae883a8748912645f174d023f
   - enabled: 0
-    path: Assets/XR Interaction Toolkit/2.2.0/Starter Assets/DemoScene.unity
+    path: Assets/Lib/XR Interaction Toolkit/2.2.0/Starter Assets/DemoScene.unity
     guid: 319dafa5c80f29f428dc1e0d03f04177
   m_configObjects:
     Unity.XR.PICO.LivePreview.Settings: {fileID: 11400000, guid: 015916cee2c22374a9f39c4659a6ebf2, type: 2}
