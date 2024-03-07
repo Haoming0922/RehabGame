@@ -13,7 +13,7 @@ PlayerSettings:
   useOnDemandResources: 0
   accelerometerFrequency: 60
   companyName: DefaultCompany
-  productName: Wheelchair1
+  productName: ReHybGame
   defaultCursor: {fileID: 0}
   cursorHotspot: {x: 0, y: 0}
   m_SplashScreenBackgroundColor: {r: 0.13725491, g: 0.12156863, b: 0.1254902, a: 1}
@@ -135,10 +135,7 @@ PlayerSettings:
     16:9: 1
     Others: 1
   bundleVersion: 0.1
-  preloadedAssets:
-  - {fileID: 11400000, guid: c11cda615183cb1459c8e60543bf35bd, type: 2}
-  - {fileID: -3960061086535667177, guid: bf1b25d41d038484b8165291f33087ad, type: 2}
-  - {fileID: 4802006963936928738, guid: 8561c98d77436824c81ef2fa80147e3a, type: 2}
+  preloadedAssets: []
   metroInputSource: 0
   wsaTransparentSwapchain: 0
   m_HolographicPauseOnTrackingLoss: 1
@@ -158,7 +155,7 @@ PlayerSettings:
   androidSupportedAspectRatio: 1
   androidMaxAspectRatio: 2.1
   applicationIdentifier:
-    Android: com.DefaultCompany.Wheelchair1
+    Android: com.DefaultCompany.ReHybGame
     Standalone: com.DefaultCompany.SyncsenseTest
   buildNumber:
     Standalone: 0
