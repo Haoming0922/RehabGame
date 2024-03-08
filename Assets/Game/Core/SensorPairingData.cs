@@ -69,7 +69,7 @@ namespace Game.Core
 
         public void SaveData()
         {
-            string path = Path.Combine(Application.persistentDataPath, exercise.ToString());
+            string path = Path.Combine(Application.persistentDataPath, exercise.ToString() + ".sensorpair");
             if (File.Exists(path)) File.Delete(path);
             try
             {
@@ -92,7 +92,7 @@ namespace Game.Core
 
         public void LoadData(Exercise ex)
         {
-            string path = Path.Combine(Application.persistentDataPath, ex.ToString());
+            string path = Path.Combine(Application.persistentDataPath, ex.ToString() + ".sensorpair");
             SensorPairingData newData = null;
             if (File.Exists(path))
             {

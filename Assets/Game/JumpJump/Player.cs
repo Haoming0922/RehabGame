@@ -2,58 +2,89 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using Game.Core;
 
 namespace Game.JumpJump
 {
 
-    public class Jump : MonoBehaviour
+    public class Player : MonoBehaviour
     {
+        public SensorManager sensorManager;
+        public GameManager gameManager;
         public Rigidbody player;
         public GameObject curve;
-        public Transform cam;
-
+        
+        [Header("Jump Force Parameters")]
+        public float maxForceThreshold;
+        public float forceFactor;
+        
         private GameObject mass;
-
-        public float maxThreshold;
+        
         private float force = 0;
         private float targetForce = 0;
-        private int currentCube = 0;
-        private int sphereNumber = 0;
 
         private bool isOnGround = false;
-
+        
         void Start()
         {
-            Application.targetFrameRate = -1;
+            // Application.targetFrameRate = -1;
             mass = transform.GetChild(0).gameObject;
             SetMass();
         }
 
         void FixedUpdate()
         {
-            if (currentCube == LevelGenerator.cubes.Count - 1)
+            if (gameManager.IsStart && !gameManager.IsWin)
             {
-                Debug.Log("Success");
-                return;
+                Jump();
             }
-
-            StartCoroutine(SlowerControl());
         }
 
-        private IEnumerator SlowerControl()
+        private void Jump()
         {
-            Vector3 jumpPosition = GetEndPosition(force);
-            if (Input.GetKey(KeyCode.J) && isOnGround)
+            Vector3 jumpPosition = GetEndPosition();
+
+            SensorInput(jumpPosition);
+            // keyBoardInput(jumpPosition);
+        }
+
+        private void SensorInput(Vector3 position)
+        {
+            float sensorInput = sensorManager.GetData(gameManager.currentController);
+            if (sensorInput > 0 && isOnGround)
             {
-                force++;
-                if (jumpPosition != transform.position) sphereNumber = DrawCurve(jumpPosition);
-                yield return new WaitForSeconds(0.5f);
+                force += sensorInput;
+                if (position != transform.position) DrawCurve(position);
             }
             else
             {
                 if (force > 0)
                 {
-                    StartCoroutine(MoveAlongCurve(jumpPosition));
+                    StartCoroutine(MoveAlongCurve(position));
+                    force = 0;
+                }
+            }
+        }
+
+        private void keyBoardInput(Vector3 position)
+        {
+            if (Input.GetKey(KeyCode.J) && isOnGround)
+            {
+                force++;
+                if (position != transform.position) DrawCurve(position);
+                else
+                {
+                    for (int i = 0; i < curve.transform.childCount; i++)
+                    {
+                        curve.transform.GetChild(i).gameObject.SetActive(false);
+                    }
+                }
+            }
+            else
+            {
+                if (force > 0)
+                {
+                    StartCoroutine(MoveAlongCurve(position));
                     force = 0;
                 }
             }
@@ -62,7 +93,7 @@ namespace Game.JumpJump
 
         private IEnumerator MoveAlongCurve(Vector3 jumpPosition)
         {
-            for (int i = 0; i < sphereNumber; i++)
+            for (int i = 0; i < curve.transform.childCount; i++)
             {
                 curve.transform.GetChild(i).gameObject.SetActive(false);
             }
@@ -70,13 +101,10 @@ namespace Game.JumpJump
             // Bezier Curve
             Vector3 p0 = transform.position;
             Vector3 p1 = new Vector3(transform.position.x, jumpPosition.y + 6, transform.position.z);
-            Vector3 p2 = new Vector3(jumpPosition.x, jumpPosition.y + 4, jumpPosition.z + 2);
+            Vector3 p2 = new Vector3(jumpPosition.x, jumpPosition.y + 6, jumpPosition.z);
             Vector3 p3 = jumpPosition;
 
-            Vector3 rotationAngle = LevelGenerator.cubes[currentCube + 1].transform.rotation.eulerAngles -
-                                    LevelGenerator.cubes[currentCube].transform.rotation.eulerAngles;
-
-            //this.GetComponent<Rigidbody>().useGravity = false;
+            // this.GetComponent<Rigidbody>().useGravity = false;
 
             float t = 0;
             while (t < 1)
@@ -85,13 +113,20 @@ namespace Game.JumpJump
                              3 * t * Mathf.Pow(1 - t, 2) * p1 +
                              3 * (1 - t) * Mathf.Pow(t, 2) * p2 +
                              Mathf.Pow(t, 3) * p3;
+                
+                // int lerp = 0;
+                // while (lerp < 30)
+                // {
+                //     transform.position = Vector3.Lerp(transform.position, bt, Time.deltaTime);
+                //     lerp++;
+                // }
                 transform.position = bt;
                 //transform.Rotate(rotationAngle * Time.deltaTime);
                 t += 1f * Time.deltaTime;
                 yield return null;
             }
 
-            //this.GetComponent<Rigidbody>().useGravity = true;
+            // this.GetComponent<Rigidbody>().useGravity = true;
         }
 
         private void SetMass()
@@ -101,18 +136,15 @@ namespace Game.JumpJump
         }
 
 
-        private int DrawCurve(Vector3 jumpPosition)
+        private void DrawCurve(Vector3 jumpPosition)
         {
             // Bezier Curve
             Vector3 p0 = transform.position;
-            Vector3 p1 = new Vector3(transform.position.x, jumpPosition.y + 6, transform.position.z);
-            Vector3 p2 = new Vector3(jumpPosition.x, jumpPosition.y + 4, jumpPosition.z + 2);
+            Vector3 p1 = new Vector3(transform.position.x, jumpPosition.y + 8, transform.position.z);
+            Vector3 p2 = new Vector3(jumpPosition.x, jumpPosition.y + 6, jumpPosition.z);
             Vector3 p3 = jumpPosition;
-
-            int totalSphere = curve.transform.childCount;
-            Transform lastSphere = null;
-
-            for (int i = 0; i < totalSphere; i++)
+            
+            for (int i = 0; i < curve.transform.childCount; i++)
             {
                 float t = 0.15f * i;
                 Vector3 bt = Mathf.Pow(1 - t, 3) * p0 +
@@ -122,7 +154,6 @@ namespace Game.JumpJump
 
                 curve.transform.GetChild(i).gameObject.SetActive(true);
                 curve.transform.GetChild(i).position = bt;
-                lastSphere = curve.transform.GetChild(i);
 
                 //if (lastSphere == null || EnoughSpace(lastSphere.position, bt))
                 //{
@@ -135,28 +166,23 @@ namespace Game.JumpJump
                 //    return i;
                 //}
             }
-
-            return totalSphere;
         }
+        
 
-
-        private bool EnoughSpace(Vector3 p1, Vector3 p2)
-        {
-            return (p1 - p2).magnitude > 0.2 ? true : false;
-        }
-
-
-        private Vector3 GetEndPosition(float force)
+        private Vector3 GetEndPosition()
         {
 
             Vector3 currentPosition = transform.position;
-            Vector3 targetPosition = LevelGenerator.cubes[currentCube + 1].transform.position;
-            targetPosition.y += LevelGenerator.cubes[currentCube + 1].transform.lossyScale.y;
-            targetForce = 5 * (targetPosition - currentPosition).magnitude;
+            Vector3 targetPosition = gameManager.GetTargetPosition();
+            targetForce = forceFactor * (targetPosition - currentPosition).magnitude;
 
-            if (force > targetForce + maxThreshold) return currentPosition;
+            Debug.Log("Target Force: " + targetForce + " Current Force: " + force);
 
-            if (Mathf.Abs(force - targetForce) <= 5) force = targetForce;
+            if (force > targetForce + maxForceThreshold)
+            {
+                return currentPosition;
+            }
+            
             return currentPosition + force / targetForce * (targetPosition - currentPosition);
         }
 
@@ -164,10 +190,9 @@ namespace Game.JumpJump
         {
             if (other.gameObject.CompareTag("Ground"))
             {
-                currentCube = other.gameObject.transform.parent.GetSiblingIndex();
+                gameManager.UpdateCurrentCube(other.gameObject.transform.parent.GetSiblingIndex());
                 isOnGround = true;
                 //cam.LookAt(transform.position);
-                Debug.Log(currentCube);
             }
         }
 
@@ -184,17 +209,14 @@ namespace Game.JumpJump
             if (other.gameObject.CompareTag("Dead"))
             {
                 transform.rotation = Quaternion.identity;
-                transform.position = LevelGenerator.cubes[currentCube].transform.position +
-                                     new Vector3(0, LevelGenerator.cubes[currentCube].transform.lossyScale.y, 0) +
-                                     1 * transform.up;
-            }
+                transform.position = gameManager.GetCurrentPosition();
+;            }
         }
 
         public Vector3 GetLookAt()
         {
             Vector3 currentPosition = transform.position;
-            Vector3 targetPosition = LevelGenerator.cubes[currentCube + 1].transform.position;
-            targetPosition.y += LevelGenerator.cubes[currentCube + 1].transform.lossyScale.y;
+            Vector3 targetPosition = gameManager.GetTargetPosition();
             return (currentPosition + targetPosition) / 2;
         }
     }

@@ -8,16 +8,17 @@ namespace Game.Core
 {
     public class Calculation
     {
-        public static float AverageMotion(SensorDataReceived data)
+        public static bool IsMove(SensorDataReceived data)
         {
-            return (Mathf.Abs(data.accX) + Mathf.Abs(data.accY) + Mathf.Abs(data.accZ));
+            return (Mathf.Abs(data.accX) + Mathf.Abs(data.accY) + Mathf.Abs(data.accZ)) > 20f ? true : false;
         }
 
 
         public static float ToRacingData(SensorDataReceived data)
         {
             float threshold = 12f;
-            if (AverageMotion(data) > threshold) return Mathf.Log10(AverageMotion(data) / threshold);
+            float averageMotion = Mathf.Abs(data.accX) + Mathf.Abs(data.accY) + Mathf.Abs(data.accZ);
+            if (averageMotion > threshold) return Mathf.Log10(averageMotion / threshold);
             else return 0;
         }
 

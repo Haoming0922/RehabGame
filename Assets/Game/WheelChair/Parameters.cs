@@ -19,7 +19,7 @@ namespace Game.Wheelchair
         public float staticFriction;
         public int windowSize;
 
-        private static string fileName = "Wheelchair";
+        private static string fileName = "Wheelchair.setting";
 
         public Parameters()
         {

@@ -1,19 +1,26 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Game.JumpJump;
+using TMPro;
 using UnityEngine;
+using Unity.XR.PXR;
 
 namespace Game.Core
 {
     public class SensorManager : MonoBehaviour
     {
         public Exercise exercise;
-
+        public TextMeshProUGUI guide;
+        
         private SensorPairingData _sensorPairingData = new SensorPairingData();
-
         private IDictionary<SensorPosition, RotationController> gameInput =
             new Dictionary<SensorPosition, RotationController>();
+        private int sensorCount = 0;
 
+        // every GameManager need to implement this event to start the game after sensors calibrated
+        public Action gameStartEvent; 
+        
         private void Awake()
         {
             _sensorPairingData.LoadData(exercise);
@@ -23,10 +30,82 @@ namespace Game.Core
         {
             gameInput.Add(SensorPosition.LEFT, new RotationController(SensorPosition.LEFT, _sensorPairingData));
             gameInput.Add(SensorPosition.RIGHT, new RotationController(SensorPosition.RIGHT, _sensorPairingData));
-
             ConnectToSensors();
+
+            if (exercise == Exercise.DUMBBELL)
+            {
+                transform.GetChild(0).gameObject.SetActive(true);
+                guide.text = "Connecting to sensors...";
+                
+                StartCoroutine(DumbbellCalibrate());
+                
+                transform.GetChild(0).gameObject.SetActive(false);
+                gameStartEvent.Invoke();
+            }
+            
+            else if (exercise == Exercise.WHEELCHAIR)
+            {
+            }
+        }
+        
+        private IEnumerator DumbbellCalibrate()
+        {
+            yield return new WaitForSeconds(0.5f);
+            
+            while (sensorCount < gameInput.Count)
+            {
+                guide.text = "Please move the sensors to wake them";
+                yield return null;
+            }
+
+            bool leftCalibrated = false;
+            bool rightCalibrated = false;
+            while (!leftCalibrated)
+            {
+                guide.text = "Please hold the left sensor still";
+                yield return new WaitForSeconds(0.5f);
+                if (!gameInput[SensorPosition.LEFT].IsMove)
+                {
+                    guide.text = "Please raise left side";
+                    yield return new WaitForSeconds(0.1f);
+                    
+                    while (true)
+                    {
+                        if (gameInput[SensorPosition.LEFT].IsMove)
+                        {
+                            gameInput[SensorPosition.LEFT].SetCalibration();
+                            leftCalibrated = true;
+                            break;
+                        }
+                        yield return null;
+                    }
+                }
+            }
+            while (!rightCalibrated)
+            {
+                guide.text = "Please hold the right sensor still";
+                yield return new WaitForSeconds(0.5f);
+                if (!gameInput[SensorPosition.RIGHT].IsMove)
+                {
+                    guide.text = "Please raise right side";
+                    yield return new WaitForSeconds(0.1f);
+                    
+                    while (true)
+                    {
+                        if (gameInput[SensorPosition.RIGHT].IsMove)
+                        {
+                            gameInput[SensorPosition.RIGHT].SetCalibration();
+                            rightCalibrated = true;
+                            break;
+                        }
+                        yield return null;
+                    }
+                }
+            }
+            
         }
 
+        
         public float GetData(SensorPosition position)
         {
             return gameInput[position].value;
@@ -50,6 +129,11 @@ namespace Game.Core
             SyncsenseSensorManager.OnDeviceConnectionStateChangeEvent +=
                 SensorManagerOnDeviceConnectionStateChangeEvent;
             SyncsenseSensorManager.OnServicesDiscoveredEvent += SensorManagerOnOnServicesDiscoveredEvent;
+            
+            SyncsenseSensorManager.Instance.StartScan();
+            Debug.Log("Start Scan");
+        
+            PXR_Input.ResetController();
         }
 
         public void OnDestroy()
@@ -121,7 +205,7 @@ namespace Game.Core
             }
 
             Debug.Log("SUBSCRIBED TO DEVICE: " + discoveredServices.deviceAddress);
-
+            sensorCount++;
         }
 
 

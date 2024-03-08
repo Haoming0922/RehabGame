@@ -34,7 +34,7 @@ public class PairingProgressBarManager : MonoBehaviour
 
     IEnumerator WheelchairSensorPairing()
     {
-        guideText.text = "Please mount the sensors to the wheelchair, and roll both wheels to awake them...";
+        guideText.text = "Please mount the sensors to the wheelchair, and roll both wheels to wake them...";
         yield return new WaitForSeconds(5);
 
         foreach (var progressBarObject in pairingProgressBars)
@@ -59,11 +59,12 @@ public class PairingProgressBarManager : MonoBehaviour
         }
         
         _sensorPairingData.SaveData();
+        gameObject.transform.GetChild(2).gameObject.GetComponent<Button>().onClick.Invoke();
     }
 
     IEnumerator DumbbelSensorPairing()
     {
-        guideText.text = "Please move the sensors to awake them...";
+        guideText.text = "Please move the sensors to wake them...";
         yield return new WaitForSeconds(5);
 
         foreach (var progressBarObject in pairingProgressBars)
@@ -88,11 +89,12 @@ public class PairingProgressBarManager : MonoBehaviour
         }
         
         _sensorPairingData.SaveData();
+        gameObject.transform.GetChild(2).gameObject.GetComponent<Button>().onClick.Invoke();
     }
 
     IEnumerator CyclingSensorPairing() 
     {
-        guideText.text = "Please move the sensors to awake them..."; //TODO
+        guideText.text = "Please move the sensors to wake them..."; //TODO
         yield return new WaitForSeconds(5);
 
         foreach (var progressBarObject in pairingProgressBars)
@@ -117,6 +119,7 @@ public class PairingProgressBarManager : MonoBehaviour
         }
         
         _sensorPairingData.SaveData();
+        gameObject.transform.GetChild(2).gameObject.GetComponent<Button>().onClick.Invoke();
     }
         
 }

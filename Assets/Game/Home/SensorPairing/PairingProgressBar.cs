@@ -130,10 +130,7 @@ public class PairingProgressBar : MonoBehaviour
 
 	private void ProgressGrowEvent(SensorDataReceived data)
 	{
-		float motion = Calculation.AverageMotion(data);
-		Debug.Log("[Haoming] Motion: " + motion);
-		
-		if (motion > 15f)
+		if (Calculation.IsMove(data))
 		{
 			if (data.deviceAddress == sensorAddress || sensorAddress == null)
 			{
