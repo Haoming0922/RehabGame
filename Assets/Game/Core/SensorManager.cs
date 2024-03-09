@@ -17,9 +17,6 @@ namespace Game.Core
         private IDictionary<SensorPosition, RotationController> gameInput =
             new Dictionary<SensorPosition, RotationController>();
         private int sensorCount = 0;
-
-        // every GameManager need to implement this event to start the game after sensors calibrated
-        public Action gameStartEvent; 
         
         private void Awake()
         {
@@ -31,25 +28,28 @@ namespace Game.Core
             gameInput.Add(SensorPosition.LEFT, new RotationController(SensorPosition.LEFT, _sensorPairingData));
             gameInput.Add(SensorPosition.RIGHT, new RotationController(SensorPosition.RIGHT, _sensorPairingData));
             ConnectToSensors();
+        }
 
-            if (exercise == Exercise.DUMBBELL)
-            {
-                transform.GetChild(0).gameObject.SetActive(true);
-                guide.text = "Connecting to sensors...";
-                
-                StartCoroutine(DumbbellCalibrate());
-                
-                transform.GetChild(0).gameObject.SetActive(false);
-                gameStartEvent.Invoke();
-            }
-            
-            else if (exercise == Exercise.WHEELCHAIR)
-            {
-            }
+        public float GetData(SensorPosition position)
+        {
+            return gameInput[position].value;
         }
         
-        private IEnumerator DumbbellCalibrate()
+        
+        #region Dumbbell Calibrate Event
+        
+        public void OnDumbbellCalibrate()
         {
+            StartCoroutine(DumbbellCalibrate());
+        }
+        
+        public IEnumerator DumbbellCalibrate()
+        {
+            transform.GetChild(0).gameObject.SetActive(true);
+            transform.GetChild(0).position = Camera.main.transform.position + 30 * Camera.main.transform.forward;
+
+            guide.text = "Connecting to sensors...";
+            
             yield return new WaitForSeconds(0.5f);
             
             while (sensorCount < gameInput.Count)
@@ -103,13 +103,14 @@ namespace Game.Core
                 }
             }
             
+            transform.GetChild(0).gameObject.SetActive(false);
+            
         }
 
+        #endregion
         
-        public float GetData(SensorPosition position)
-        {
-            return gameInput[position].value;
-        }
+        #region Connect to Sensors
+        
 
         public void ConnectToSensors()
         {
@@ -208,7 +209,7 @@ namespace Game.Core
             sensorCount++;
         }
 
-
+        #endregion
+        
     }
-
 }

@@ -5,6 +5,11 @@ using UnityEngine.SceneManagement;
 
 public class Home : MonoBehaviour
 {
+    public void GoHome()
+    {
+        SceneManager.LoadScene("Home");
+    }
+    
     public void JumpJump()
     {
         SceneManager.LoadScene("Jump");

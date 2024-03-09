@@ -34,10 +34,7 @@ namespace Game.JumpJump
 
         void FixedUpdate()
         {
-            if (gameManager.IsStart && !gameManager.IsWin)
-            {
-                Jump();
-            }
+            Jump();
         }
 
         private void Jump()

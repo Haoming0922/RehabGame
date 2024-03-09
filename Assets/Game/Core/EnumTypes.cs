@@ -1,5 +1,14 @@
 namespace Game.Core
 {
+    public enum GameState
+    {
+        PREPARE,
+        CALIBRATE,
+        PLAY,
+        END,
+        NULL
+    }
+    
     public enum Exercise
     {
         WHEELCHAIR,

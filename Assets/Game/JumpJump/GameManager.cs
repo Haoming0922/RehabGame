@@ -12,6 +12,7 @@ namespace Game.JumpJump
     public class GameManager : MonoBehaviour
     {
         public SensorManager sensorManager;
+        public GameStateManager gameStateManager;
         [Header("level Generator")] 
         public int seed;
         public List<GameObject> cubePrefs;
@@ -24,27 +25,42 @@ namespace Game.JumpJump
         public TextMeshProUGUI textGuide;
         
         private int currentCube = 0;
+        private int lastCube = 0;
         private List<Transform> cubes = new List<Transform>();
         
-        public bool IsStart { get; private set; }
-        public bool IsWin { get; private set; }
-        
         public SensorPosition currentController;
+
         
-        // Start is called before the first frame update
         void Start()
         {
-            textLeft.gameObject.SetActive(false);
-            textRight.gameObject.SetActive(false);
-            textGuide.gameObject.SetActive(false);
-            IsStart = false;
-            IsWin = false;
-            sensorManager.gameStartEvent += GameStart;
+            gameStateManager.PrepareEvent += OnGameStart;
+            gameStateManager.PrepareEvent += DisablePlayerControl;
+            gameStateManager.PrepareEvent += DisableCameraFollow;
+            
+            gameStateManager.CalibrateEvent += sensorManager.OnDumbbellCalibrate;
+            gameStateManager.CalibrateEvent += DisablePlayerControl;
+
+            gameStateManager.PlayEvent += EnablePlayerControl;
+            gameStateManager.PlayEvent += EnableCameraFollow;
+
+            gameStateManager.EndEvent += DisablePlayerControl;
+            
+            gameStateManager.SwitchGameState(GameState.PREPARE);
         }
 
         private void OnDestroy()
         {
-            sensorManager.gameStartEvent -= GameStart;
+            gameStateManager.PrepareEvent -= OnGameStart;
+            gameStateManager.PrepareEvent -= DisablePlayerControl;
+            gameStateManager.PrepareEvent -= DisableCameraFollow;
+            
+            gameStateManager.CalibrateEvent -= sensorManager.OnDumbbellCalibrate;
+            gameStateManager.CalibrateEvent -= DisablePlayerControl;
+            
+            gameStateManager.PlayEvent -= EnablePlayerControl;
+            gameStateManager.PlayEvent -= EnableCameraFollow;
+            
+            gameStateManager.EndEvent -= DisablePlayerControl;
         }
 
         // Update is called once per frame
@@ -53,14 +69,45 @@ namespace Game.JumpJump
             WinCheck();
         }
         
-        private void GameStart()
+        
+        public void EnableCameraFollow()
+        {
+            GameObject.Find("CameraOffset").GetComponent<CameraFollow>().enabled = true;
+        }
+
+        public void DisableCameraFollow()
+        {
+            GameObject.Find("CameraOffset").GetComponent<CameraFollow>().enabled = false;
+        }
+
+        
+        public void EnablePlayerControl()
+        {
+            GameObject.Find("Player").GetComponent<Player>().enabled = true;
+        }
+
+        public void DisablePlayerControl()
+        {
+            GameObject.Find("Player").GetComponent<Player>().enabled = false;
+        }
+
+        
+        
+        private void OnGameStart()
         {
             StartCoroutine(Prepare());
         }
         
         private IEnumerator Prepare()
         {
-            IsStart = true;
+            textLeft.gameObject.SetActive(false);
+            textRight.gameObject.SetActive(false);
+            textGuide.gameObject.SetActive(false);
+         
+            yield return StartCoroutine(sensorManager.DumbbellCalibrate());
+            
+            gameStateManager.SwitchGameState(GameState.PLAY);
+            
             GenerateLevels();
             yield return new WaitForSeconds(2f);
             
@@ -80,14 +127,16 @@ namespace Game.JumpJump
             
             textGuide.gameObject.SetActive(false);
             SetControlSensor(null);
-
+            
             yield return new WaitForSeconds(.5f);
         }
 
+        
+        
         public void SetControlSensor(SensorPosition? position)
         {
             if (position != null) currentController = position.Value;
-            else currentController = Random.Range(0, 1) == 0 ? SensorPosition.LEFT : SensorPosition.RIGHT;
+            else currentController = Random.Range(0, 2) == 0 ? SensorPosition.LEFT : SensorPosition.RIGHT;
             switch (currentController)
             {
                 case SensorPosition.LEFT:
@@ -100,6 +149,7 @@ namespace Game.JumpJump
                     break;
             }
         }
+        
         
         public Transform GetCube(int idx)
         {
@@ -125,7 +175,11 @@ namespace Game.JumpJump
             currentCube = idx;
             Debug.Log(currentCube);
 
-            SetControlSensor(null);
+            if (lastCube < currentCube)
+            {
+                SetControlSensor(null);
+                lastCube = currentCube;
+            }
         }
         
         private void GenerateLevels()
@@ -165,14 +219,16 @@ namespace Game.JumpJump
             }
         }
         
+        
+        
         private void WinCheck()
         {
             if (currentCube == cubes.Count - 1)
             {
                 textGuide.gameObject.SetActive(true);
                 textGuide.text = "Congratulations";
-
-                IsWin = true;
+                
+                gameStateManager.SwitchGameState(GameState.END);
             }
         }
         
