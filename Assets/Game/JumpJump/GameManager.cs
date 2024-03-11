@@ -28,6 +28,7 @@ namespace Game.JumpJump
         private int lastCube = 0;
         private List<Transform> cubes = new List<Transform>();
         
+        public float MaxDistance { get; private set; }
         public SensorPosition currentController;
 
         
@@ -214,6 +215,12 @@ namespace Game.JumpJump
                     newCube.name = "Cube" + cubeIdx;
 
                     cubes.Add(newCube.transform);
+
+                    if ((lastCube.transform.position - newCube.transform.position).magnitude > MaxDistance)
+                    {
+                        MaxDistance = (lastCube.transform.position - newCube.transform.position).magnitude;
+                    }
+                    
                     lastCube = newCube.transform;
                 }
             }

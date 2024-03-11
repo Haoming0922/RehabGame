@@ -12,10 +12,12 @@ namespace Game.Core
         private string sensorAddress = "";
 
         private int lowPassWindowSize = 8;
-        private SensorDataReceived averageValue;
+        public SensorDataReceived averageValue { get; private set; }
         private float rotationThreshold = 20f;
 
         private Queue<SensorDataReceived> dataWindow = new Queue<SensorDataReceived>();
+
+        private float maxRotation = 1f;
         
         public RotationDirection direction { get; set; }
         public bool IsMove { get; private set; }
@@ -37,7 +39,7 @@ namespace Game.Core
 
             SyncsenseSensorManager.OnSensorDataReceivedEvent += RotationControlEvent;
         }
-
+        
         private void OnDestroy()
         {
             SyncsenseSensorManager.OnSensorDataReceivedEvent -= RotationControlEvent;
@@ -75,78 +77,68 @@ namespace Game.Core
             switch (direction)
             {
                 case RotationDirection.XPOSITIVE:
-                    if (Mathf.Abs(averageValue.gyroX) > rotationThreshold)
-                    {
-                        value = averageValue.gyroX > 0 ? 1 : -1;
-                    }
-                    else value = 0;
-                    break;
                 case RotationDirection.XNEGATIVE:
                     if (Mathf.Abs(averageValue.gyroX) > rotationThreshold)
                     {
-                        value = averageValue.gyroX > 0 ? -1 : 1;
+                        value = averageValue.gyroX / maxRotation;
                     }
                     else value = 0;
                     break;
+                
                 case RotationDirection.YPOSITIVE:
-                    if (Mathf.Abs(averageValue.gyroY) > rotationThreshold)
-                    {
-                        value = averageValue.gyroY > 0 ? 1 : -1;
-                    }
-                    else value = 0;
-                    break;
                 case RotationDirection.YNEGATIVE:
                     if (Mathf.Abs(averageValue.gyroY) > rotationThreshold)
                     {
-                        value = averageValue.gyroY > 0 ? -1 : 1;
+                        value = averageValue.gyroY / maxRotation;
                     }
                     else value = 0;
                     break;
+                
                 case RotationDirection.ZPOSITIVE:
-                    if (Mathf.Abs(averageValue.gyroZ) > rotationThreshold)
-                    {
-                        value = averageValue.gyroX > 0 ? 1 : -1;
-                    }
-                    else value = 0;
-                    break;
                 case RotationDirection.ZNEGATIVE:
                     if (Mathf.Abs(averageValue.gyroZ) > rotationThreshold)
                     {
-                        value = averageValue.gyroZ > 0 ? -1 : 1;
+                        value = averageValue.gyroZ / maxRotation;
                     }
                     else value = 0;
                     break;
+                
                 default: break;
             }
+
         }
 
 
-        public void SetCalibration()
+        public void SetCalibration(SensorDataReceived data)
         {
-            if (Mathf.Abs(averageValue.gyroX) > Mathf.Abs(averageValue.gyroY))
+            if (Mathf.Abs(data.gyroX) > Mathf.Abs(data.gyroY))
             {
-                if (Mathf.Abs(averageValue.gyroX) > Mathf.Abs(averageValue.gyroZ)) // X
+                if (Mathf.Abs(data.gyroX) > Mathf.Abs(data.gyroZ)) // X
                 {
-                    direction = averageValue.gyroX > 0 ? RotationDirection.XPOSITIVE :
+                    direction = data.gyroX > 0 ? RotationDirection.XPOSITIVE :
                     RotationDirection.XNEGATIVE;
+                    maxRotation = data.gyroX;
                 }
                 else // Z
                 {
-                    direction = averageValue.gyroZ > 0 ? RotationDirection.ZPOSITIVE :
+                    direction = data.gyroZ > 0 ? RotationDirection.ZPOSITIVE :
                         RotationDirection.ZNEGATIVE;
+                    maxRotation = data.gyroZ;
                 }
             }
             else
             {
-                if (Mathf.Abs(averageValue.gyroY) > Mathf.Abs(averageValue.gyroZ)) // Y
+                if (Mathf.Abs(data.gyroY) > Mathf.Abs(data.gyroZ)) // Y
                 {
-                    direction = averageValue.gyroY > 0 ? RotationDirection.YPOSITIVE :
+                    direction = data.gyroY > 0 ? RotationDirection.YPOSITIVE :
                         RotationDirection.YNEGATIVE;
+                    maxRotation = data.gyroY;
                 }
                 else // Z
                 {
-                    direction = averageValue.gyroZ > 0 ? RotationDirection.ZPOSITIVE :
+                    direction = data.gyroZ > 0 ? RotationDirection.ZPOSITIVE :
                         RotationDirection.ZNEGATIVE;
+                    maxRotation = data.gyroZ;
                 }
             }
         }

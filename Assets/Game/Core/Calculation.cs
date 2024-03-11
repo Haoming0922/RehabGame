@@ -10,9 +10,13 @@ namespace Game.Core
     {
         public static bool IsMove(SensorDataReceived data)
         {
-            return (Mathf.Abs(data.accX) + Mathf.Abs(data.accY) + Mathf.Abs(data.accZ)) > 20f ? true : false;
+            return (Mathf.Abs(data.accX) + Mathf.Abs(data.accY) + Mathf.Abs(data.accZ)) > 13f ? true : false;
         }
 
+        public static float RotationAmount(SensorDataReceived data)
+        {
+            return Mathf.Abs(data.gyroX) + Mathf.Abs(data.gyroY) + Mathf.Abs(data.gyroZ);
+        }
 
         public static float ToRacingData(SensorDataReceived data)
         {

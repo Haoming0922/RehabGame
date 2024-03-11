@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Game.JumpJump;
 using TMPro;
 using UnityEngine;
 using Unity.XR.PXR;
@@ -11,6 +10,7 @@ namespace Game.Core
     public class SensorManager : MonoBehaviour
     {
         public Exercise exercise;
+        public ClassicProgressBar progressBar;
         public TextMeshProUGUI guide;
         
         private SensorPairingData _sensorPairingData = new SensorPairingData();
@@ -28,6 +28,7 @@ namespace Game.Core
             gameInput.Add(SensorPosition.LEFT, new RotationController(SensorPosition.LEFT, _sensorPairingData));
             gameInput.Add(SensorPosition.RIGHT, new RotationController(SensorPosition.RIGHT, _sensorPairingData));
             ConnectToSensors();
+            progressBar.m_FillAmount = 0;
         }
 
         public float GetData(SensorPosition position)
@@ -43,14 +44,15 @@ namespace Game.Core
             StartCoroutine(DumbbellCalibrate());
         }
         
+        
         public IEnumerator DumbbellCalibrate()
         {
             transform.GetChild(0).gameObject.SetActive(true);
-            transform.GetChild(0).position = Camera.main.transform.position + 30 * Camera.main.transform.forward;
+            transform.GetChild(0).position = Camera.main.transform.position + 10 * Camera.main.transform.forward;
 
             guide.text = "Connecting to sensors...";
             
-            yield return new WaitForSeconds(0.5f);
+            yield return new WaitForSeconds(1f);
             
             while (sensorCount < gameInput.Count)
             {
@@ -58,55 +60,92 @@ namespace Game.Core
                 yield return null;
             }
 
-            bool leftCalibrated = false;
-            bool rightCalibrated = false;
-            while (!leftCalibrated)
-            {
-                guide.text = "Please hold the left sensor still";
-                yield return new WaitForSeconds(0.5f);
-                if (!gameInput[SensorPosition.LEFT].IsMove)
-                {
-                    guide.text = "Please raise left side";
-                    yield return new WaitForSeconds(0.1f);
-                    
-                    while (true)
-                    {
-                        if (gameInput[SensorPosition.LEFT].IsMove)
-                        {
-                            gameInput[SensorPosition.LEFT].SetCalibration();
-                            leftCalibrated = true;
-                            break;
-                        }
-                        yield return null;
-                    }
-                }
-            }
-            while (!rightCalibrated)
-            {
-                guide.text = "Please hold the right sensor still";
-                yield return new WaitForSeconds(0.5f);
-                if (!gameInput[SensorPosition.RIGHT].IsMove)
-                {
-                    guide.text = "Please raise right side";
-                    yield return new WaitForSeconds(0.1f);
-                    
-                    while (true)
-                    {
-                        if (gameInput[SensorPosition.RIGHT].IsMove)
-                        {
-                            gameInput[SensorPosition.RIGHT].SetCalibration();
-                            rightCalibrated = true;
-                            break;
-                        }
-                        yield return null;
-                    }
-                }
-            }
+            yield return StartCoroutine(DumbbellCalibrateOneSide(SensorPosition.LEFT));
+            yield return StartCoroutine(DumbbellCalibrateOneSide(SensorPosition.RIGHT));
             
             transform.GetChild(0).gameObject.SetActive(false);
-            
         }
 
+
+
+        private IEnumerator DumbbellCalibrateOneSide(SensorPosition position)
+        {
+            progressBar.m_FillAmount = 0;
+            guide.text = "Please hold the " + position.ToString().ToLower() +  " sensor at start position";
+            yield return new WaitForSeconds(1f);
+            float t = 0f;
+            float waitTime = 5f;
+            while (t < waitTime)
+            {
+                if (!gameInput[position].IsMove)
+                {
+                    t += Time.deltaTime;
+                }
+                else t = 0;
+                progressBar.m_FillAmount = t / waitTime;
+                yield return null;
+            }
+
+            progressBar.m_FillAmount = 0;
+            guide.text = "Please raise " + position.ToString().ToLower() + " side as far as you can";
+            yield return new WaitForSeconds(1f);
+            SensorDataReceived rotationAmount = new SensorDataReceived();
+            float maxRotation = 0f;
+            
+            bool calibrated = false;
+            while (!calibrated)
+            {
+                if (gameInput[position].IsMove)
+                {
+                    rotationAmount += gameInput[position].averageValue;
+                    gameInput[position].SetCalibration(rotationAmount);
+                    
+                    switch (gameInput[position].direction)
+                    {
+                        case RotationDirection.XPOSITIVE:
+                        case RotationDirection.XNEGATIVE:
+                            if (Mathf.Abs(rotationAmount.gyroX) > Mathf.Abs(maxRotation))
+                            {
+                                maxRotation = rotationAmount.gyroX;
+                                gameInput[position].SetCalibration(rotationAmount);
+                            }
+                            else
+                            {
+                                calibrated = true;
+                            }
+                            break;
+                        case RotationDirection.YPOSITIVE:
+                        case RotationDirection.YNEGATIVE:
+                            if (Mathf.Abs(rotationAmount.gyroY) > Mathf.Abs(maxRotation))
+                            {
+                                maxRotation = rotationAmount.gyroY;
+                                gameInput[position].SetCalibration(rotationAmount);
+                            }
+                            else
+                            {
+                                calibrated = true;
+                            }
+                            break;
+                        case RotationDirection.ZPOSITIVE:
+                        case RotationDirection.ZNEGATIVE:
+                            if (Mathf.Abs(rotationAmount.gyroZ) > Mathf.Abs(maxRotation))
+                            {
+                                maxRotation = rotationAmount.gyroZ;
+                                gameInput[position].SetCalibration(rotationAmount);
+                            }
+                            else
+                            {
+                                calibrated = true;
+                            }
+                            break;
+                    }
+                }
+                
+                progressBar.m_FillAmount = maxRotation / 100f;
+                yield return null;
+            }
+        }
+        
         #endregion
         
         #region Connect to Sensors

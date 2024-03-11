@@ -14,14 +14,9 @@ namespace Game.JumpJump
         public Rigidbody player;
         public GameObject curve;
         
-        [Header("Jump Force Parameters")]
-        public float maxForceThreshold;
-        public float forceFactor;
-        
         private GameObject mass;
         
         private float force = 0;
-        private float targetForce = 0;
 
         private bool isOnGround = false;
         
@@ -97,7 +92,7 @@ namespace Game.JumpJump
 
             // Bezier Curve
             Vector3 p0 = transform.position;
-            Vector3 p1 = new Vector3(transform.position.x, jumpPosition.y + 6, transform.position.z);
+            Vector3 p1 = new Vector3(transform.position.x, transform.position.y + 6, transform.position.z);
             Vector3 p2 = new Vector3(jumpPosition.x, jumpPosition.y + 6, jumpPosition.z);
             Vector3 p3 = jumpPosition;
 
@@ -137,7 +132,7 @@ namespace Game.JumpJump
         {
             // Bezier Curve
             Vector3 p0 = transform.position;
-            Vector3 p1 = new Vector3(transform.position.x, jumpPosition.y + 8, transform.position.z);
+            Vector3 p1 = new Vector3(transform.position.x, transform.position.y + 6, transform.position.z);
             Vector3 p2 = new Vector3(jumpPosition.x, jumpPosition.y + 6, jumpPosition.z);
             Vector3 p3 = jumpPosition;
             
@@ -171,11 +166,11 @@ namespace Game.JumpJump
 
             Vector3 currentPosition = transform.position;
             Vector3 targetPosition = gameManager.GetTargetPosition();
-            targetForce = forceFactor * (targetPosition - currentPosition).magnitude;
+            float targetForce =  (targetPosition - currentPosition).magnitude / gameManager.MaxDistance;
 
-            Debug.Log("Target Force: " + targetForce + " Current Force: " + force);
+            Debug.Log(" Current Force: " + force);
 
-            if (force > targetForce + maxForceThreshold)
+            if (force > 1.3f)
             {
                 return currentPosition;
             }
