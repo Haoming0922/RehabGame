@@ -5,7 +5,7 @@ using System.Collections;
 using TMPro;
 using UnityEngine.UI;
 using Game.Wheelchair;
-using Game.Core;
+using Game.Sensor;
 
 public class WheelchairController : MonoBehaviour
 {

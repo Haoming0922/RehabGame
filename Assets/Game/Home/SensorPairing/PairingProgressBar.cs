@@ -4,7 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using Game.Core;
+using Game.Sensor;
 
 public class PairingProgressBar : MonoBehaviour
 {

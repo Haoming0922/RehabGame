@@ -1,4 +1,4 @@
-namespace Game.Core
+namespace Game.Sensor
 {
     public enum GameState
     {

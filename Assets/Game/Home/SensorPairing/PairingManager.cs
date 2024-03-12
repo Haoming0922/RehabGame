@@ -1,166 +1,123 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
-using TMPro;
-using Unity.XR.PXR;
 using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+using Game.Sensor;
 
 public class PairingManager : MonoBehaviour
 {
-    [Header("UI Items")] 
-    public GameObject manager;
-    public TextMeshProUGUI textBluetoothEnabled;
-    public TextMeshProUGUI textHasPermissions;
-    public TextMeshProUGUI textConnectedDevices;
-
-    private List<string> sensorList = new List<string>();
-    // static Dictionary<string, SensorUpdater> sensorDict = new Dictionary<string, SensorUpdater>();
+    public Exercise exercise;
+    [SerializeField] private TextMeshProUGUI guideText;
+    public List<GameObject> pairingProgressBars;
     
-    private void OnDestroy()
+    private SensorPairingData _sensorPairingData;
+    
+    
+    private void Start()
     {
-        DisConnect();
+        _sensorPairingData = new SensorPairingData(exercise);
+        switch (exercise)
+        {
+            case Exercise.WHEELCHAIR:
+                StartCoroutine(WheelchairSensorPairing());
+                break;
+            case Exercise.DUMBBELL:
+                StartCoroutine(DumbbelSensorPairing());
+                break;
+            case Exercise.CYCLE:
+                StartCoroutine(CycleSensorPairing());
+                break;
+            default: break;
+        }
     }
-    
-    public void Enable()
+
+    IEnumerator WheelchairSensorPairing()
     {
-        manager.SetActive(true);
+        guideText.text = "Please mount the sensors to the wheelchair, and roll both wheels to wake them...";
+        yield return new WaitForSeconds(5);
+
+        foreach (var progressBarObject in pairingProgressBars)
+        {
+            PairingProgressBar progressBar = progressBarObject.GetComponent<PairingProgressBar>();
             
-        if (!SyncsenseSensorManager.Instance.IsBluetoothEnabled())
-        {
-            SyncsenseSensorManager.Instance.RequestBluetoothEnable();
-        }
-        
-        if (!SyncsenseSensorManager.Instance.HasPermissions())
-        {
-            SyncsenseSensorManager.Instance.RequestPermissions();
-        }
-        
-        textBluetoothEnabled.SetText(SyncsenseSensorManager.Instance.IsBluetoothEnabled()?"BL is Enabled":"BL is Disabled");
-        textHasPermissions.SetText(SyncsenseSensorManager.Instance.HasPermissions()?"We have Permissions":"We don't have Permissions");
-        
-        SyncsenseSensorManager.OnScanResultEvent += SyncsenseSensorManagerOnOnScanResultEvent;
-        SyncsenseSensorManager.OnScanErrorEvent += SyncsenseSensorManagerOnOnScanErrorEvent;
-        
-        SyncsenseSensorManager.OnDeviceConnectionStateChangeEvent += OnDeviceConnectionStateChangeEvent;
-        SyncsenseSensorManager.OnServicesDiscoveredEvent += OnOnServicesDiscoveredEvent;
-        
-        // SyncsenseSensorManager.OnBatteryDataReceivedEvent += OnBatteryDataReceivedEvent;
-        
-        SyncsenseSensorManager.Instance.StartScan();
-        Debug.Log("Start Scan");
-        
-        // PXR_Input.ResetController();
-    }
-    
-    public void Disable()
-    {
-        manager.SetActive(false);
-        DisConnect();
-    }
-    
-    private void DisConnect()
-    {
-        foreach (var sensor in sensorList)
-        {
-            SyncsenseSensorManager.Instance.DisconnectFromDevice(sensor);
-        }
-        
-        SyncsenseSensorManager.OnScanResultEvent -= SyncsenseSensorManagerOnOnScanResultEvent;
-        SyncsenseSensorManager.OnScanErrorEvent -= SyncsenseSensorManagerOnOnScanErrorEvent;
-        
-        SyncsenseSensorManager.OnDeviceConnectionStateChangeEvent -= OnDeviceConnectionStateChangeEvent;
-        SyncsenseSensorManager.OnServicesDiscoveredEvent -= OnOnServicesDiscoveredEvent;
-    }
-    
-    
-    private void SyncsenseSensorManagerOnOnScanErrorEvent(ScanError obj)
-    {
-        Debug.Log("Scan Error Code: " + obj.errorCode);
-    }
-
-    private void SyncsenseSensorManagerOnOnScanResultEvent(ScanResult obj)
-    {
-        Debug.Log("Scan Result: " + obj.name + " - " + obj.address);
-        if (obj.name != null && obj.name.Equals("Cadence_Sensor"))
-        {
-            SyncsenseSensorManager.Instance.ConnectToDevice(obj.address);
-        }
-    }
-    
-    private void OnDeviceConnectionStateChangeEvent(ConnectionStateChange connectionStateChange)
-    {
-        if (connectionStateChange.newState == ConnectionState.STATE_CONNECTED)
-        {
-            if (sensorList.Contains(connectionStateChange.deviceAddress)) return; // we already have this device connected
+            guideText.text = "Please only roll the " + progressBar.sensorPosition.ToString().ToLower() + " wheel forward";
+            progressBar.SetProgressBarActive(true);
             
-            sensorList.Add(connectionStateChange.deviceAddress);
-            textConnectedDevices.SetText("Connected devices: " + sensorList.Count);
-            SyncsenseSensorManager.Instance.DiscoverServicesForDevice(connectionStateChange.deviceAddress);
-
-        }
-        if (connectionStateChange.newState == ConnectionState.STATE_DISCONNECTED)
-        {
-            sensorList.Remove(connectionStateChange.deviceAddress);
-            textConnectedDevices.SetText("Connected devices: " + sensorList.Count);
-            SyncsenseSensorManager.Instance.ConnectToDevice(connectionStateChange.deviceAddress);
-        }
-    }
-    
-    private void OnOnServicesDiscoveredEvent(ServicesDiscovered discoveredServices)
-    {
-        foreach (ServiceItem serviceItem in discoveredServices.services)
-        {
-            Debug.Log("Found Service: " + serviceItem.serviceUuid);
-            foreach (CharacteristicItem characteristicItem in serviceItem.characteristics)
+            while (!progressBar.IsFinished())
             {
-                Debug.Log(" - Found Characteristic: " + characteristicItem.characteristicUuid);
+                yield return null;
             }
+            
+            guideText.text = "Pairing Success";
+            progressBar.SetProgressBarActive(false);
+            
+            _sensorPairingData.SetSensorAddress(progressBar.sensorPosition, progressBar.GetSensorAddress());
+            _sensorPairingData.SetSensorDirection(progressBar.sensorPosition, progressBar.GetRotationDirection());
+
+            yield return new WaitForSeconds(1);
         }
         
-        // Subscription can fail at the enabling level. In that scenario, the subscription attempt must be retried.
-        StartCoroutine(attemptToSubscribe(discoveredServices));
+        DataSaver.SaveData("Wheelchair.sensorpair", typeof(SensorPairingData));
+        gameObject.transform.GetChild(2).gameObject.GetComponent<Button>().onClick.Invoke();
     }
 
-    private IEnumerator attemptToSubscribe(ServicesDiscovered discoveredServices)
+    IEnumerator DumbbelSensorPairing()
     {
-        bool result = false;
-        while (!result)
-        {
-            result = SyncsenseSensorManager.Instance.SubscribeToSensorData(discoveredServices.deviceAddress);
-            if (!result) yield return new WaitForSeconds(1);
-        }
-        Debug.Log("[Haoming] SUBSCRIBED TO DEVICE: " + discoveredServices.deviceAddress);
-        
-        // result = false;
-        // while (!result)
-        // {
-        //     result = SyncsenseSensorManager.Instance.SubscribeToBatteryData(discoveredServices.deviceAddress);
-        //     
-        //     if (!result) yield return new WaitForSeconds(1);
-        // }
-    }
-    
-    
-    private void OnBatteryDataReceivedEvent(BatteryDataReceived data)
-    {   
-    }
-    
-    // private void HandleSensorData(SensorDataReceived data)
-    // {   
-    //     sensorDict[data.deviceAddress].data = data;
-    //     sensorDict[data.deviceAddress].deviceAddress = data.deviceAddress;
-    //     
-    //     sensorDict[data.deviceAddress].samplesCounter ++;
-    //
-    //     // Check if one second has passed
-    //     if (sensorDict[data.deviceAddress].stopwatch.ElapsedMilliseconds - sensorDict[data.deviceAddress].lastUpdateTime >= 1000)
-    //     {
-    //         sensorDict[data.deviceAddress].sampleRate = sensorDict[data.deviceAddress].samplesCounter;
-    //         
-    //         sensorDict[data.deviceAddress].samplesCounter = 0; // Reset counter
-    //         sensorDict[data.deviceAddress].lastUpdateTime = sensorDict[data.deviceAddress].stopwatch.ElapsedMilliseconds; // Update the last update time
-    //     }
-    // }
-    
+        guideText.text = "Please move the sensors to wake them...";
+        yield return new WaitForSeconds(5);
 
+        foreach (var progressBarObject in pairingProgressBars)
+        {
+            PairingProgressBar progressBar = progressBarObject.GetComponent<PairingProgressBar>();
+            
+            guideText.text = "Please only move the " + progressBar.sensorPosition.ToString().ToLower() + " sensor";
+            progressBar.SetProgressBarActive(true);
+            
+            while (!progressBar.IsFinished())
+            {
+                yield return null;
+            }
+            
+            guideText.text = "Pairing Success";
+            progressBar.SetProgressBarActive(false);
+            
+            _sensorPairingData.SetSensorAddress(progressBar.sensorPosition, progressBar.GetSensorAddress());
+            _sensorPairingData.SetSensorDirection(progressBar.sensorPosition, RotationDirection.NULL);
+
+            yield return new WaitForSeconds(1);
+        }
+        DataSaver.SaveData("Dumbbel.sensorpair", typeof(SensorPairingData));
+        gameObject.transform.GetChild(2).gameObject.GetComponent<Button>().onClick.Invoke();
+    }
+
+    IEnumerator CycleSensorPairing() 
+    {
+        guideText.text = "Please move the sensors to wake them..."; //TODO
+        yield return new WaitForSeconds(5);
+
+        foreach (var progressBarObject in pairingProgressBars)
+        {
+            PairingProgressBar progressBar = progressBarObject.GetComponent<PairingProgressBar>();
+            
+            guideText.text = "Please only move the " + progressBar.sensorPosition.ToString().ToLower() + " sensor";
+            progressBar.SetProgressBarActive(true);
+            
+            while (!progressBar.IsFinished())
+            {
+                yield return null;
+            }
+            
+            guideText.text = "Pairing Success";
+            progressBar.SetProgressBarActive(false);
+            
+            _sensorPairingData.SetSensorAddress(progressBar.sensorPosition, progressBar.GetSensorAddress());
+            _sensorPairingData.SetSensorDirection(progressBar.sensorPosition, RotationDirection.NULL);
+
+            yield return new WaitForSeconds(1);
+        }
+        DataSaver.SaveData("Cycle.sensorpair", typeof(SensorPairingData));
+        gameObject.transform.GetChild(2).gameObject.GetComponent<Button>().onClick.Invoke();
+    }
+        
 }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
-namespace Game.Core
+namespace Game.Sensor
 {
     public class RotationController
     {

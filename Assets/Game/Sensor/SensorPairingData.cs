@@ -8,7 +8,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.Serialization;
 
 
-namespace Game.Core
+namespace Game.Sensor
 {
 
     [Serializable]
@@ -64,7 +64,7 @@ namespace Game.Core
         #endregion
 
 
-
+        /*
         #region Save&Load
 
         public void SaveData()
@@ -128,7 +128,8 @@ namespace Game.Core
             rightSensorDirection = newData.rightSensorDirection;
         }
 
-        #endregion
+        #endregion          
+        */
 
     }
 
