@@ -2,112 +2,186 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using Game.Util;
 
 namespace Game.Sensor
 {
     public class RotationController
     {
         public float value = 0;
-
         private string sensorAddress = "";
+        private float currentRotationRaw = 0;
+        private float maxRotationAngle = 0;
+        private RotationDirection direction = RotationDirection.NULL;
 
+        private Queue<float> dataWindow = new Queue<float>();
         private int lowPassWindowSize = 8;
-        public SensorDataReceived averageValue { get; private set; }
+        public float averageValue { get; private set; }
+
         private float rotationThreshold = 20f;
-
-        private Queue<SensorDataReceived> dataWindow = new Queue<SensorDataReceived>();
-
-        private float maxRotation = 1f;
-        
-        public RotationDirection direction { get; set; }
         public bool IsMove { get; private set; }
 
 
-        public RotationController(SensorPosition position, SensorPairingData pairingData)
+        public RotationController(SensorPosition position, SensorPairingData pairingData, UserConfig userConfig)
         {
             switch (position)
             {
                 case SensorPosition.LEFT:
                     direction = pairingData.leftSensorDirection;
                     sensorAddress = pairingData.leftSensorAddress;
+                    maxRotationAngle = userConfig.maxLeftArmRotationAngle;
                     break;
                 case SensorPosition.RIGHT:
                     direction = pairingData.rightSensorDirection;
                     sensorAddress = pairingData.rightSensorAddress;
+                    maxRotationAngle = userConfig.maxRightArmRotationAngle;
                     break;
             }
-
-            SyncsenseSensorManager.OnSensorDataReceivedEvent += RotationControlEvent;
+            
         }
-        
-        private void OnDestroy()
-        {
-            SyncsenseSensorManager.OnSensorDataReceivedEvent -= RotationControlEvent;
-        }
-        
 
-        public void RotationControlEvent(SensorDataReceived sensorData)
+        public void WheelchairControlEvent(SensorDataReceived sensorData)
         {
             if (sensorAddress == sensorData.deviceAddress)
             {
-                LowPassFiltRotation(sensorData);
-                RotationToGameInput();
+                WheelchairLowPassFiltRotation(sensorData);
+                WheelchairRotationToGameInput();
+            }
+        }
+        
+        public void DumbbellControlEvent1(SensorDataReceived sensorData)
+        {
+            if (sensorAddress == sensorData.deviceAddress)
+            {
+                DumbbellLowPassFiltRotation(sensorData);
+                DumbbellRotationToGameInput1();
+            }
+        }
+        
+        public void DumbbellControlEvent2(SensorDataReceived sensorData)
+        {
+            if (sensorAddress == sensorData.deviceAddress)
+            {
+                DumbbellLowPassFiltRotation(sensorData);
+                DumbbellRotationToGameInput2();
             }
         }
 
-        private void LowPassFiltRotation(SensorDataReceived sensorData)
+        private void DumbbellLowPassFiltRotation(SensorDataReceived sensorData)
         {
+            float data = sensorData.gyroX * Mathf.Sign(sensorData.accX);
+            
             if (dataWindow.Count < lowPassWindowSize)
             {
-                dataWindow.Enqueue(sensorData);
+                dataWindow.Enqueue(data);
             }
             else
             {
                 dataWindow.Dequeue();
-                dataWindow.Enqueue(sensorData);
+                dataWindow.Enqueue(data);
             }
-
+            
             averageValue = Calculation.AverageQueue(dataWindow);
-            IsMove = Calculation.IsMove(averageValue);
+            
+            IsMove = Calculation.IsMove(sensorData);
         }
 
-
-        private void RotationToGameInput()
+        private void DumbbellRotationToGameInput1()
         {
+            currentRotationRaw += averageValue;
+            currentRotationRaw = Mathf.Clamp(currentRotationRaw, 0, maxRotationAngle);
+            value = currentRotationRaw / maxRotationAngle;
+        }
+        
+        private void DumbbellRotationToGameInput2() //JumpJump
+        {
+            if (averageValue >= -10f)
+            {
+                currentRotationRaw += averageValue;
+                currentRotationRaw = Mathf.Clamp(currentRotationRaw, 0, maxRotationAngle);
+                value = currentRotationRaw / maxRotationAngle;
+            }
+            else
+            {
+                value = -1;
+            }
+        }
+        
+        private void WheelchairLowPassFiltRotation(SensorDataReceived sensorData)
+        {
+            float data = 0;
+            
             switch (direction)
             {
                 case RotationDirection.XPOSITIVE:
                 case RotationDirection.XNEGATIVE:
-                    if (Mathf.Abs(averageValue.gyroX) > rotationThreshold)
-                    {
-                        value = averageValue.gyroX / maxRotation;
-                    }
-                    else value = 0;
+                    data = sensorData.gyroX;
                     break;
-                
                 case RotationDirection.YPOSITIVE:
                 case RotationDirection.YNEGATIVE:
-                    if (Mathf.Abs(averageValue.gyroY) > rotationThreshold)
-                    {
-                        value = averageValue.gyroY / maxRotation;
-                    }
-                    else value = 0;
+                    data = sensorData.gyroY;
                     break;
-                
                 case RotationDirection.ZPOSITIVE:
                 case RotationDirection.ZNEGATIVE:
-                    if (Mathf.Abs(averageValue.gyroZ) > rotationThreshold)
-                    {
-                        value = averageValue.gyroZ / maxRotation;
-                    }
-                    else value = 0;
+                    data = sensorData.gyroZ;
                     break;
-                
                 default: break;
             }
+            
+            if (dataWindow.Count < lowPassWindowSize)
+            {
+                dataWindow.Enqueue(data);
+            }
+            else
+            {
+                dataWindow.Dequeue();
+                dataWindow.Enqueue(data);
+            }
 
+            averageValue = Calculation.AverageQueue(dataWindow);
+            
+            IsMove = Calculation.IsMove(sensorData);
         }
 
+
+        private void WheelchairRotationToGameInput()
+        {
+            switch (direction)
+            {
+                case RotationDirection.XPOSITIVE:
+                case RotationDirection.ZPOSITIVE:
+                case RotationDirection.YPOSITIVE:
+                    if (Mathf.Abs(averageValue) > rotationThreshold)
+                    {
+                        value = averageValue;
+                    }
+                    else
+                    {
+                        value = 0;
+                    }
+                    break;
+                case RotationDirection.XNEGATIVE:
+                case RotationDirection.YNEGATIVE:
+                case RotationDirection.ZNEGATIVE:
+                    if (Mathf.Abs(averageValue) > rotationThreshold)
+                    {
+                        value = -averageValue;
+                    }
+                    else
+                    {
+                        value = 0;
+                    }
+                    break;
+                default: break;
+            }
+        }
+
+
+
+
+        /*
+     
+        #region archive
 
         public void SetCalibration(SensorDataReceived data)
         {
@@ -116,7 +190,7 @@ namespace Game.Sensor
                 if (Mathf.Abs(data.gyroX) > Mathf.Abs(data.gyroZ)) // X
                 {
                     direction = data.gyroX > 0 ? RotationDirection.XPOSITIVE :
-                    RotationDirection.XNEGATIVE;
+                        RotationDirection.XNEGATIVE;
                     maxRotation = data.gyroX;
                 }
                 else // Z
@@ -142,6 +216,10 @@ namespace Game.Sensor
                 }
             }
         }
+
+        #endregion
+         */
+        
         
     }
 

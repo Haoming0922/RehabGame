@@ -5,7 +5,9 @@ using System.Collections;
 using TMPro;
 using UnityEngine.UI;
 using Game.Wheelchair;
+using Game.Util;
 using Game.Sensor;
+using Unity.VisualScripting;
 
 public class WheelchairController : MonoBehaviour
 {
@@ -44,6 +46,13 @@ public class WheelchairController : MonoBehaviour
         leftAction.Enable();
         rightAction.Enable();
         joyStickAction.Enable();
+
+        sensorManager.SubscribeWheelchairEvent();
+    }
+
+    private void OnDestroy()
+    {
+        sensorManager.UnSubscribeWheelchairEvent();
     }
 
     private void OnDisable()
