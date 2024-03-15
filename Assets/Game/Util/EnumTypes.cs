@@ -1,9 +1,8 @@
-namespace Game.Sensor
+namespace Game.Util
 {
     public enum GameState
     {
         PREPARE,
-        CALIBRATE,
         PLAY,
         END,
         NULL

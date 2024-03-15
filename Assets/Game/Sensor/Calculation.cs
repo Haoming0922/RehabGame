@@ -10,8 +10,24 @@ namespace Game.Sensor
     {
         public static bool IsMove(SensorDataReceived data)
         {
-            return (Mathf.Abs(data.accX) + Mathf.Abs(data.accY) + Mathf.Abs(data.accZ)) > 13f ? true : false;
+            float moving = Mathf.Abs(data.accX) + Mathf.Abs(data.accY) + Mathf.Abs(data.accZ);
+            // Debug.Log("[Haoming] IsMove: " + moving);
+            return moving > 15f;
         }
+        
+        public static bool IsRaise(SensorDataReceived data)
+        {
+            float threshold = 10;
+            float sign = data.accX >= 0 ? 1 : -1;
+            return data.gyroY * sign > threshold;
+        }
+        
+        public static bool IsDownX(SensorDataReceived data)
+        {
+            // Debug.Log("[Haoming] IsDownX: " + Mathf.Abs(data.accX));
+            return Mathf.Abs(data.accX) > 8f;
+        }
+
 
         public static float RotationAmount(SensorDataReceived data)
         {
@@ -36,6 +52,39 @@ namespace Game.Sensor
 
             return sum / dataQueue.Count;
         }
+        
+        public static float AverageQueue(Queue<float> dataQueue)
+        {
+            float sum = 0;
+            foreach (var data in dataQueue)
+            {
+                sum += data;
+            }
+
+            return sum / dataQueue.Count;
+        }
+        
+        
+        public static float ComplementaryFilterRotationY(float gy, float ax, float angleY, float weightAcc)
+        {
+            const float gravity = 9.8f;
+
+            // Clamp ax value within range [-9.8, 9.8]
+            if (ax < -gravity) ax = -gravity;
+            else if (ax > gravity) ax = gravity;
+
+            // Calculate thetaAcc (angle from accelerometer)
+            float thetaAcc = Mathf.Acos(ax / gravity) * Mathf.Rad2Deg;
+
+            // Calculate thetaRot (angle from gyroscope)
+            float sign = ax >= 0 ? 1 : -1;
+            float thetaRot = angleY + gy * sign * Time.deltaTime;
+
+            // Calculate the final angle using the complementary filter
+            return weightAcc * thetaAcc + (1 - weightAcc) * thetaRot;
+        }
+
+
 
         public static Quaternion MadgwickIMU(float gx, float gy, float gz, float ax, float ay, float az,
             float deltaTime, Quaternion q)
@@ -100,6 +149,9 @@ namespace Game.Sensor
             return q;
         }
 
+        
+        
+        
     }
 
 }

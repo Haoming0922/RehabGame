@@ -5,6 +5,7 @@ using TMPro;
 using UnityEngine;
 using Unity.XR.PXR;
 using UnityEngine.SceneManagement;
+using Game.Util;
 
 namespace Game.Sensor
 {
@@ -12,9 +13,9 @@ namespace Game.Sensor
     {
         public Exercise exercise;
         private SensorPairingData _sensorPairingData = new SensorPairingData();
+        private UserConfig _userConfig = new UserConfig();
         private IDictionary<SensorPosition, RotationController> gameInput = new Dictionary<SensorPosition, RotationController>();
-        public int sensorCount = 0;
-        public TextMeshProUGUI guide;
+        private int sensorCount = 0;
         
         private void Awake()
         {
@@ -23,8 +24,11 @@ namespace Game.Sensor
 
         private void LoadConfigData()
         {
-            DataSaver.OnDataLoad += BackHome;
             _sensorPairingData = (SensorPairingData) DataSaver.LoadData(exercise.ToString() + ".sensorpair", typeof(SensorPairingData));
+            if(_sensorPairingData == null) BackHome();
+            
+            _userConfig = (UserConfig) DataSaver.LoadData(exercise.ToString() + ".userconfig", typeof(UserConfig));
+            if(_userConfig == null && exercise == Exercise.DUMBBELL) BackHome();
         }
 
         private void BackHome()
@@ -35,102 +39,51 @@ namespace Game.Sensor
         
         private void Start()
         {
-            gameInput.Add(SensorPosition.LEFT, new RotationController(SensorPosition.LEFT, _sensorPairingData));
-            gameInput.Add(SensorPosition.RIGHT, new RotationController(SensorPosition.RIGHT, _sensorPairingData));
+            gameInput.Add(SensorPosition.LEFT, new RotationController(SensorPosition.LEFT, _sensorPairingData, _userConfig));
+            gameInput.Add(SensorPosition.RIGHT, new RotationController(SensorPosition.RIGHT, _sensorPairingData, _userConfig));
             ConnectToSensors();
         }
 
+        public void SubscribeWheelchairEvent()
+        {
+            SyncsenseSensorManager.OnSensorDataReceivedEvent += gameInput[SensorPosition.LEFT].WheelchairControlEvent;
+            SyncsenseSensorManager.OnSensorDataReceivedEvent += gameInput[SensorPosition.RIGHT].WheelchairControlEvent;
+        }
+        
+        public void UnSubscribeWheelchairEvent()
+        {
+            SyncsenseSensorManager.OnSensorDataReceivedEvent -= gameInput[SensorPosition.LEFT].WheelchairControlEvent;
+            SyncsenseSensorManager.OnSensorDataReceivedEvent -= gameInput[SensorPosition.RIGHT].WheelchairControlEvent;
+        }
+        
+        public void SubscribeDumbbellEvent1()
+        {
+            SyncsenseSensorManager.OnSensorDataReceivedEvent += gameInput[SensorPosition.LEFT].DumbbellControlEvent1;
+            SyncsenseSensorManager.OnSensorDataReceivedEvent += gameInput[SensorPosition.RIGHT].DumbbellControlEvent1;
+        }
+        
+        public void UnSubscribeDumbbellEvent1()
+        {
+            SyncsenseSensorManager.OnSensorDataReceivedEvent -= gameInput[SensorPosition.LEFT].DumbbellControlEvent1;
+            SyncsenseSensorManager.OnSensorDataReceivedEvent -= gameInput[SensorPosition.RIGHT].DumbbellControlEvent1;
+        }
+        
+        public void SubscribeDumbbellEvent2()
+        {
+            SyncsenseSensorManager.OnSensorDataReceivedEvent += gameInput[SensorPosition.LEFT].DumbbellControlEvent2;
+            SyncsenseSensorManager.OnSensorDataReceivedEvent += gameInput[SensorPosition.RIGHT].DumbbellControlEvent2;
+        }
+        
+        public void UnSubscribeDumbbellEvent2()
+        {
+            SyncsenseSensorManager.OnSensorDataReceivedEvent -= gameInput[SensorPosition.LEFT].DumbbellControlEvent2;
+            SyncsenseSensorManager.OnSensorDataReceivedEvent -= gameInput[SensorPosition.RIGHT].DumbbellControlEvent2;
+        }
+        
         public float GetData(SensorPosition position)
         {
             return gameInput[position].value;
         }
-        
-        
-        #region Dumbbell Calibrate
-                
-        public void OnDumbbellCalibrate()
-        {
-            StartCoroutine(DumbbellCalibrate());
-        }
-
-        public IEnumerator DumbbellCalibrate()
-        {
-            // transform.GetChild(0).gameObject.SetActive(true);
-            // transform.GetChild(0).position = Camera.main.transform.position + 10 * Camera.main.transform.forward;
-            
-            guide.text = "Please move the sensors to wake them";
-            yield return new WaitForSeconds(3f);
-
-            UserConfig config = new UserConfig();
-
-            yield return StartCoroutine(DumbbellCalibrateOneSide(SensorPosition.LEFT, config));
-            yield return StartCoroutine(DumbbellCalibrateOneSide(SensorPosition.RIGHT, config));
-
-            DataSaver.SaveData("Dumbbell.userconfig", config);
-
-            transform.GetChild(0).gameObject.SetActive(false);
-        }
-
-
-
-        private IEnumerator DumbbellCalibrateOneSide(SensorPosition position, UserConfig config)
-        {
-            guide.text = "Please put down the " + position.ToString().ToLower() + " sensor";
-            yield return new WaitForSeconds(1f);
-            float t = 0f;
-            float waitTime = 5f;
-            while (t < waitTime)
-            {
-                if (!gameInput[position].IsMove)
-                {
-                    t += Time.deltaTime;
-                }
-                else t = 0;
-                yield return null;
-            }
-            
-            guide.text = "Please raise " + position.ToString().ToLower() + " side";
-            yield return new WaitForSeconds(1f);
-
-            float armRotationRaw = 0f;
-            Quaternion armRotationMadgwick = Quaternion.identity;
-            while (true)
-            {
-                float armRotationRawDelta = gameInput[position].averageValue.gyroY *
-                                            Mathf.Sign(gameInput[position].averageValue.accX);
-
-                armRotationMadgwick = Calculation.MadgwickIMU(gameInput[position].averageValue.gyroX,
-                    gameInput[position].averageValue.gyroY,
-                    gameInput[position].averageValue.gyroZ,
-                    gameInput[position].averageValue.accX,
-                    gameInput[position].averageValue.accY,
-                    gameInput[position].averageValue.accZ,
-                    Time.deltaTime,
-                    armRotationMadgwick
-                );
-
-                if (armRotationRawDelta >= -10) armRotationRaw += armRotationRawDelta;
-                else break;
-            }
-
-            switch (position)
-            {
-                case SensorPosition.LEFT:
-                    config.maxLeftArmRotationAngle = Mathf.Abs(armRotationMadgwick.eulerAngles.x);
-                    config.maxLeftArmRotationRaw = armRotationRaw;
-                    break;
-                case SensorPosition.RIGHT:
-                    config.maxRightArmRotationAngle = Mathf.Abs(armRotationMadgwick.eulerAngles.x);
-                    config.maxRightArmRotationRaw = armRotationRaw;
-                    break;
-            }
-
-            yield return null;
-
-        }
-
-        #endregion
-        
         
         #region Connect to Sensors
         
@@ -170,8 +123,6 @@ namespace Game.Sensor
             SyncsenseSensorManager.OnDeviceConnectionStateChangeEvent +=
                 SensorManagerOnDeviceConnectionStateChangeEvent;
             SyncsenseSensorManager.OnServicesDiscoveredEvent += SensorManagerOnOnServicesDiscoveredEvent;
-            
-            DataSaver.OnDataLoad -= BackHome;
         }
 
         private void SensorManagerOnScanErrorEvent(ScanError obj)

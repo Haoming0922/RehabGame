@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using Game.Sensor;
+using Game.Util;
 
 public class PairingProgressBar : MonoBehaviour
 {
@@ -53,6 +54,12 @@ public class PairingProgressBar : MonoBehaviour
 
 	#region Progress Bar
 
+	
+	private void OnDisable()
+	{
+		SyncsenseSensorManager.OnSensorDataReceivedEvent -= ProgressGrowEvent;
+	}
+	
 	private void OnDestroy()
 	{
 		SyncsenseSensorManager.OnSensorDataReceivedEvent -= ProgressGrowEvent;

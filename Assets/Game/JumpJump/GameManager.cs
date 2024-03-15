@@ -6,6 +6,7 @@ using Game.Sensor;
 using TMPro;
 using UnityEngine;
 using Random = UnityEngine.Random;
+using Game.Util;
 
 namespace Game.JumpJump
 {
@@ -37,9 +38,6 @@ namespace Game.JumpJump
             gameStateManager.PrepareEvent += OnGameStart;
             gameStateManager.PrepareEvent += DisablePlayerControl;
             gameStateManager.PrepareEvent += DisableCameraFollow;
-            
-            gameStateManager.CalibrateEvent += sensorManager.OnDumbbellCalibrate;
-            gameStateManager.CalibrateEvent += DisablePlayerControl;
 
             gameStateManager.PlayEvent += EnablePlayerControl;
             gameStateManager.PlayEvent += EnableCameraFollow;
@@ -54,9 +52,6 @@ namespace Game.JumpJump
             gameStateManager.PrepareEvent -= OnGameStart;
             gameStateManager.PrepareEvent -= DisablePlayerControl;
             gameStateManager.PrepareEvent -= DisableCameraFollow;
-            
-            gameStateManager.CalibrateEvent -= sensorManager.OnDumbbellCalibrate;
-            gameStateManager.CalibrateEvent -= DisablePlayerControl;
             
             gameStateManager.PlayEvent -= EnablePlayerControl;
             gameStateManager.PlayEvent -= EnableCameraFollow;
@@ -104,8 +99,6 @@ namespace Game.JumpJump
             textLeft.gameObject.SetActive(false);
             textRight.gameObject.SetActive(false);
             textGuide.gameObject.SetActive(false);
-         
-            yield return StartCoroutine(sensorManager.DumbbellCalibrate());
             
             gameStateManager.SwitchGameState(GameState.PLAY);
             

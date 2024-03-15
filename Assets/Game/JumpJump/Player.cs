@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -17,6 +18,7 @@ namespace Game.JumpJump
         private GameObject mass;
         
         private float force = 0;
+        private Vector3 jumpPosition = new Vector3();
 
         private bool isOnGround = false;
         
@@ -25,36 +27,35 @@ namespace Game.JumpJump
             // Application.targetFrameRate = -1;
             mass = transform.GetChild(0).gameObject;
             SetMass();
+            
+            sensorManager.SubscribeDumbbellEvent2();
         }
 
-        void FixedUpdate()
+        private void OnDestroy()
         {
-            Jump();
+            sensorManager.UnSubscribeDumbbellEvent2();
         }
 
-        private void Jump()
+        private void Update()
         {
-            Vector3 jumpPosition = GetEndPosition();
-
-            SensorInput(jumpPosition);
-            // keyBoardInput(jumpPosition);
+            SensorJump();
         }
 
-        private void SensorInput(Vector3 position)
+        private void SensorJump()
         {
-            float sensorInput = sensorManager.GetData(gameManager.currentController);
-            if (sensorInput > 0 && isOnGround)
+            float input = sensorManager.GetData(gameManager.currentController);
+            
+            if (input >= 0 && isOnGround)
             {
-                force += sensorInput;
-                if (position != transform.position) DrawCurve(position);
+                force = input;
+                jumpPosition = GetEndPosition();
+                if (jumpPosition != transform.position) DrawCurve(jumpPosition);
             }
-            else
+
+            if (input < 0 && force > 0)
             {
-                if (force > 0)
-                {
-                    StartCoroutine(MoveAlongCurve(position));
-                    force = 0;
-                }
+                StartCoroutine(MoveAlongCurve(jumpPosition));
+                force = 0;
             }
         }
 
@@ -163,18 +164,12 @@ namespace Game.JumpJump
 
         private Vector3 GetEndPosition()
         {
-
             Vector3 currentPosition = transform.position;
             Vector3 targetPosition = gameManager.GetTargetPosition();
             float targetForce =  (targetPosition - currentPosition).magnitude / gameManager.MaxDistance;
 
-            Debug.Log(" Current Force: " + force);
-
-            if (force > 1.3f)
-            {
-                return currentPosition;
-            }
-            
+            Debug.Log("[Haoming] Current Force: " + force);
+        
             return currentPosition + force / targetForce * (targetPosition - currentPosition);
         }
 
