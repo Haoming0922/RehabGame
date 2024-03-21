@@ -21,9 +21,8 @@ public class PairingSensorManager : MonoBehaviour
         DisConnect();
     }
     
-    public void Enable()
+    private void Start()
     {
-        manager.SetActive(true);
             
         if (!SyncsenseSensorManager.Instance.IsBluetoothEnabled())
         {
@@ -52,11 +51,6 @@ public class PairingSensorManager : MonoBehaviour
         // PXR_Input.ResetController();
     }
     
-    public void Disable()
-    {
-        manager.SetActive(false);
-        DisConnect();
-    }
     
     private void DisConnect()
     {

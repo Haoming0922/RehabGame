@@ -19,6 +19,9 @@ namespace Game.Sensor
         private float rotaionYMax = 0;
         private float rotaionYStart = 0;
         private float rotaionYEnd = 0;
+        private Dictionary<string, float> restGravity = new Dictionary<string, float>();
+        private Queue<SensorDataReceived> dataQueue = new Queue<SensorDataReceived>();
+        private int windowSize = 8;
         
         private bool isDown = false;
         
@@ -52,8 +55,21 @@ namespace Game.Sensor
                 currentSensorAddress = data.deviceAddress;
                 rotaionYMax = 0;
                 
-                float ax = Mathf.Clamp(data.accX, -9.8f, 9.8f);
-                rotaionYStart = Mathf.Acos(ax / 9.8f) * Mathf.Rad2Deg;
+                dataQueue.Clear();
+
+                float ax = data.accX;
+                if (ax < -restGravity[currentSensorAddress]) ax = -restGravity[currentSensorAddress];
+                else if (ax > restGravity[currentSensorAddress]) ax = restGravity[currentSensorAddress];
+                
+                rotaionYStart = Mathf.Acos(ax / restGravity[currentSensorAddress]) * Mathf.Rad2Deg;
+                
+                if (rotaionYStart > 90f)
+                {
+                    // X axis points upwards, set rotation back to “start from 0”
+                    // only use for visualizing arm raising, for game input just use Math.Abs()
+                    restGravity[currentSensorAddress] *= -1;
+                    rotaionYStart = 180 - rotaionYStart;
+                }
                 
                 rotaionYEnd = rotaionYStart;
             }
@@ -61,8 +77,9 @@ namespace Game.Sensor
             // update angle
             if (currentSensorAddress == data.deviceAddress)
             {
-                rotaionYEnd = Calculation.ComplementaryFilterRotationY(data.gyroY, data.accX, rotaionYEnd, CFWeightAcc);
-                // Debug.Log("[Haoming] rotaionYEnd: " + rotaionYEnd + ", theta: " + theta);
+                SensorDataReceived filterData = LowPassFilter(data);
+                rotaionYEnd = Calculation.ComplementaryFilterRotationY(filterData.gyroY, filterData.accX, rotaionYEnd, CFWeightAcc, restGravity[currentSensorAddress]);
+                Debug.Log("[Haoming] rotaionYEnd: " + rotaionYEnd + ", rotaionYStart: " + rotaionYStart);
                 avatar.UpdateArmRotation(currentPairingPosition, rotaionYEnd - rotaionYStart);
             }
 
@@ -72,6 +89,23 @@ namespace Game.Sensor
                 rotaionYMax = Mathf.Abs(rotaionYEnd - rotaionYStart);
             }
             
+        }
+
+
+
+        private SensorDataReceived LowPassFilter(SensorDataReceived data)
+        {
+            if (dataQueue.Count < windowSize)
+            {
+                dataQueue.Enqueue(data);
+            }
+            else
+            {
+                dataQueue.Dequeue();
+                dataQueue.Enqueue(data);
+            }
+
+            return Calculation.AverageQueue(dataQueue);
         }
         
 
@@ -83,6 +117,10 @@ namespace Game.Sensor
             UserConfig userconfig = new UserConfig();
             SensorPairingData sensorPairingData = new SensorPairingData(Exercise.DUMBBELL);
 
+            guide.text = "Please hold sensors still and DO NOT move";
+            yield return new WaitForSeconds(3f);
+            yield return StartCoroutine(DumbbellPairCalibrateRest());
+            
             yield return StartCoroutine(DumbbellPairCalibrateOneSide(SensorPosition.LEFT, userconfig, sensorPairingData));
             yield return StartCoroutine(DumbbellPairCalibrateOneSide(SensorPosition.RIGHT, userconfig, sensorPairingData));
 
@@ -92,6 +130,32 @@ namespace Game.Sensor
             gameObject.transform.GetChild(0).gameObject.GetComponent<Button>().onClick.Invoke();
         }
 
+
+
+        private void DumbbellPairRestEvent(SensorDataReceived data)
+        {
+            if (!restGravity.TryAdd(data.deviceAddress, Calculation.GetRestGravity(data)))
+            {
+                restGravity[data.deviceAddress] = ( restGravity[data.deviceAddress] + Calculation.GetRestGravity(data)) / 2f;
+            }
+        }
+        
+
+        private IEnumerator DumbbellPairCalibrateRest()
+        {
+            SyncsenseSensorManager.OnSensorDataReceivedEvent += DumbbellPairRestEvent;
+
+            float t = 0f;
+            while (t < 5f)
+            {
+                t += Time.deltaTime;
+                yield return null;
+            }
+
+            SyncsenseSensorManager.OnSensorDataReceivedEvent -= DumbbellPairRestEvent;
+
+        }
+        
 
 
         private IEnumerator DumbbellPairCalibrateOneSide(SensorPosition position, UserConfig userconfig, SensorPairingData sensorPairingData)
@@ -130,7 +194,8 @@ namespace Game.Sensor
             userconfig.SetArmRotationAngle(currentPairingPosition, rotaionYMax);
             sensorPairingData.SetSensorAddress(currentPairingPosition, currentSensorAddress);
             sensorPairingData.SetSensorDirection(currentPairingPosition, RotationDirection.NULL);
-
+            sensorPairingData.SetSensorGravity(currentPairingPosition, Mathf.Abs(restGravity[currentSensorAddress]));
+            
             Reset();
         }
 
