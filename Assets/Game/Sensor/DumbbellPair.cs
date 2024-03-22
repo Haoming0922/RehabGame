@@ -115,7 +115,7 @@ namespace Game.Sensor
             yield return new WaitForSeconds(3f);
 
             UserConfig userconfig = new UserConfig();
-            SensorPairingData sensorPairingData = new SensorPairingData(Exercise.DUMBBELL);
+            SensorPairingData sensorPairingData = new SensorPairingData(Exercise.Dumbbell);
 
             guide.text = "Please hold sensors still and DO NOT move";
             yield return new WaitForSeconds(3f);

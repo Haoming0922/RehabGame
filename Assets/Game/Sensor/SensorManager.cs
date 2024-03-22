@@ -12,23 +12,46 @@ namespace Game.Sensor
     public class SensorManager : MonoBehaviour
     {
         public Exercise exercise;
-        private SensorPairingData _sensorPairingData = new SensorPairingData();
-        private UserConfig _userConfig = new UserConfig();
+        private SensorPairingData _sensorPairingData;
+        private UserConfig _userConfig;
         private IDictionary<SensorPosition, RotationController> gameInput = new Dictionary<SensorPosition, RotationController>();
         private int sensorCount = 0;
         
         private void Awake()
         {
             LoadConfigData();
+            
+            gameInput.Add(SensorPosition.LEFT, new RotationController(SensorPosition.LEFT, _sensorPairingData, _userConfig));
+            gameInput.Add(SensorPosition.RIGHT, new RotationController(SensorPosition.RIGHT, _sensorPairingData, _userConfig));
+
+            switch (exercise)
+            {
+                case Exercise.Wheelchair:
+                    SubscribeWheelchairEvent();
+                    break;
+                case Exercise.Dumbbell:
+                    SubscribeDumbbellEvent2();
+                    break;
+                case Exercise.Cycle:
+                    break;
+                default:
+                    break;
+            }
+            
+            ConnectToSensors();
         }
+        
 
         private void LoadConfigData()
         {
             _sensorPairingData = (SensorPairingData) DataSaver.LoadData(exercise.ToString() + ".sensorpair", typeof(SensorPairingData));
             if(_sensorPairingData == null) BackHome();
-            
-            _userConfig = (UserConfig) DataSaver.LoadData(exercise.ToString() + ".userconfig", typeof(UserConfig));
-            if(_userConfig == null && exercise == Exercise.DUMBBELL) BackHome();
+
+            if (exercise == Exercise.Dumbbell)
+            {
+                _userConfig = (UserConfig) DataSaver.LoadData(exercise.ToString() + ".userconfig", typeof(UserConfig));
+                if(_userConfig == null) BackHome();
+            }
         }
 
         private void BackHome()
@@ -36,18 +59,12 @@ namespace Game.Sensor
             Debug.LogError("Please pair the sensors first."); //TODO
             SceneManager.LoadScene("Home");
         }
-        
-        private void Start()
-        {
-            gameInput.Add(SensorPosition.LEFT, new RotationController(SensorPosition.LEFT, _sensorPairingData, _userConfig));
-            gameInput.Add(SensorPosition.RIGHT, new RotationController(SensorPosition.RIGHT, _sensorPairingData, _userConfig));
-            ConnectToSensors();
-        }
 
         public void SubscribeWheelchairEvent()
         {
             SyncsenseSensorManager.OnSensorDataReceivedEvent += gameInput[SensorPosition.LEFT].WheelchairControlEvent;
             SyncsenseSensorManager.OnSensorDataReceivedEvent += gameInput[SensorPosition.RIGHT].WheelchairControlEvent;
+            Debug.Log("Haoming: Subscribe Success");
         }
         
         public void UnSubscribeWheelchairEvent()
@@ -123,6 +140,10 @@ namespace Game.Sensor
             SyncsenseSensorManager.OnDeviceConnectionStateChangeEvent +=
                 SensorManagerOnDeviceConnectionStateChangeEvent;
             SyncsenseSensorManager.OnServicesDiscoveredEvent += SensorManagerOnOnServicesDiscoveredEvent;
+            
+            UnSubscribeWheelchairEvent();
+            UnSubscribeDumbbellEvent1();
+            UnSubscribeDumbbellEvent2();
         }
 
         private void SensorManagerOnScanErrorEvent(ScanError obj)

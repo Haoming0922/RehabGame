@@ -12,7 +12,9 @@ public class PairingAvatar : MonoBehaviour
     [SerializeField] private Vector3 leftStartRotation;
     [SerializeField] private Vector3 rightStartRotation;
     [SerializeField] private ThirdPersonLoader loader;
-    
+
+    private Transform leftShoulder;
+    private Transform rightShoulder;
     private Transform leftArm;
     private Transform rightArm;
     private Transform leftForeArm;
@@ -20,6 +22,8 @@ public class PairingAvatar : MonoBehaviour
 
     public void FindArm()
     {
+        leftShoulder = GameObject.Find("LeftShoulder").transform;
+        rightShoulder = GameObject.Find("RightShoulder").transform;
         leftArm = GameObject.Find("LeftArm").transform;
         rightArm = GameObject.Find("RightArm").transform;
         leftForeArm = GameObject.Find("LeftForeArm").transform;
@@ -33,11 +37,14 @@ public class PairingAvatar : MonoBehaviour
         
         while (elapsedTime < 3f)
         {
+            leftShoulder.localRotation = Quaternion.Lerp(leftShoulder.localRotation, Quaternion.Euler(100f, leftShoulder.localRotation.eulerAngles.y, leftShoulder.localRotation.eulerAngles.z), speed * Time.deltaTime);
+            rightShoulder.localRotation = Quaternion.Lerp(rightShoulder.localRotation, Quaternion.Euler(95f, rightShoulder.localRotation.eulerAngles.y, rightShoulder.localRotation.eulerAngles.z), speed * Time.deltaTime);
+            
             leftArm.localRotation = Quaternion.Lerp(leftArm.localRotation, Quaternion.Euler(leftStartRotation), speed * Time.deltaTime);
             rightArm.localRotation = Quaternion.Lerp(rightArm.localRotation, Quaternion.Euler(rightStartRotation), speed * Time.deltaTime);
             
-            leftForeArm.localRotation = Quaternion.Lerp(leftForeArm.localRotation, Quaternion.Euler(5, 0, -5), speed * Time.deltaTime);
-            rightForeArm.localRotation = Quaternion.Lerp(rightForeArm.localRotation, Quaternion.Euler(5, 0, -5), speed * Time.deltaTime);
+            leftForeArm.localRotation = Quaternion.Lerp(leftForeArm.localRotation, Quaternion.Euler(0, 0, -5), speed * Time.deltaTime);
+            rightForeArm.localRotation = Quaternion.Lerp(rightForeArm.localRotation, Quaternion.Euler(0, 0, -5), speed * Time.deltaTime);
             
             elapsedTime += Time.deltaTime;
             yield return null;
@@ -47,6 +54,7 @@ public class PairingAvatar : MonoBehaviour
 
     public void UpdateArmRotation(SensorPosition position, float angle)
     {
+        if (angle < 0) return;
         // mirror user movement
         switch (position)
         {

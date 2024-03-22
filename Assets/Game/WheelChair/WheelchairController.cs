@@ -46,13 +46,6 @@ public class WheelchairController : MonoBehaviour
         leftAction.Enable();
         rightAction.Enable();
         joyStickAction.Enable();
-
-        sensorManager.SubscribeWheelchairEvent();
-    }
-
-    private void OnDestroy()
-    {
-        sensorManager.UnSubscribeWheelchairEvent();
     }
 
     private void OnDisable()
@@ -68,6 +61,7 @@ public class WheelchairController : MonoBehaviour
         float rightInput1 = rightAction.ReadValue<Vector2>()[1];
         float leftInput2 = sensorManager.GetData(SensorPosition.LEFT);
         float rightInput2 = sensorManager.GetData(SensorPosition.RIGHT);
+        Debug.Log("leftInput2: " + leftInput2 + ", rightInput2: " + rightInput2);
 
         Vector2 joyStick = joyStickAction.ReadValue<Vector2>();
         float leftInput3 = joyStick.y >= 0 ? joyStick.y + joyStick.x : joyStick.y - joyStick.x;
@@ -80,7 +74,6 @@ public class WheelchairController : MonoBehaviour
         rightInput = Mathf.Abs(rightInput1) > Mathf.Abs(rightInput2) ? rightInput1 : rightInput2;
         rightInput = Mathf.Abs(rightInput) > Mathf.Abs(rightInput3) ? rightInput : rightInput3;
         
-        Debug.Log("Left: " + leftInput + ", Right: " + rightInput);
         textLeft.text = "Left  " + leftInput;
         textRight.text = "Right  " + rightInput;
 

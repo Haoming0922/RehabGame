@@ -172,8 +172,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 393487b022c088d4db30135898060697, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  leftStartRotation: {x: 70, y: 0, z: 0}
-  rightStartRotation: {x: 70, y: 0, z: 0}
+  leftStartRotation: {x: 81, y: 0, z: 0}
+  rightStartRotation: {x: 79, y: 0, z: 0}
   loader: {fileID: 5079932739163492187}
 --- !u!1 &119929110
 GameObject:
