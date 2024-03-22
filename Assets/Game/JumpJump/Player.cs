@@ -43,10 +43,10 @@ namespace Game.JumpJump
             {
                 force = input;
                 jumpPosition = GetEndPosition();
-                if (jumpPosition != transform.position) DrawCurve(jumpPosition);
+                if ((jumpPosition - transform.position).magnitude > 3f) DrawCurve(jumpPosition);
             }
 
-            if (input < 0 && force > 0)
+            if (input < 0 && force > 0 && (jumpPosition - transform.position).magnitude > 3f) 
             {
                 StartCoroutine(MoveAlongCurve(jumpPosition));
                 force = 0;
@@ -161,10 +161,12 @@ namespace Game.JumpJump
             Vector3 currentPosition = transform.position;
             Vector3 targetPosition = gameManager.GetTargetPosition();
             float targetForce =  (targetPosition - currentPosition).magnitude / gameManager.MaxDistance;
+            targetForce = Mathf.Clamp(targetForce, 0f, 1f);
 
-            Debug.Log("[Haoming] Current Force: " + force);
-        
-            return currentPosition + force / targetForce * (targetPosition - currentPosition);
+            // Debug.Log("[Haoming] Current Force: " + force);
+
+            return Mathf.Abs(targetForce - force) < 0.1f ? targetPosition : currentPosition + force / targetForce * (targetPosition - currentPosition);
+            
         }
 
         private void OnCollisionStay(Collision other)

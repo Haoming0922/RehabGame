@@ -63,14 +63,12 @@ namespace Game.Sensor
                 
                 rotaionYStart = Mathf.Acos(ax / restGravity[currentSensorAddress]) * Mathf.Rad2Deg;
                 
-                if (rotaionYStart > 90f)
+                if (rotaionYStart > 90f) // X axis points upwards
                 {
-                    // X axis points upwards, set rotation back to “start from 0”
-                    // only use for visualizing arm raising, for game input just use Math.Abs()
                     restGravity[currentSensorAddress] *= -1;
-                    rotaionYStart = 180 - rotaionYStart;
                 }
                 
+                rotaionYStart = 0f;
                 rotaionYEnd = rotaionYStart;
             }
             
@@ -79,7 +77,7 @@ namespace Game.Sensor
             {
                 SensorDataReceived filterData = LowPassFilter(data);
                 rotaionYEnd = Calculation.ComplementaryFilterRotationY(filterData.gyroY, filterData.accX, rotaionYEnd, CFWeightAcc, restGravity[currentSensorAddress]);
-                Debug.Log("[Haoming] rotaionYEnd: " + rotaionYEnd + ", rotaionYStart: " + rotaionYStart);
+                // Debug.Log("[Haoming] rotaionYEnd: " + rotaionYEnd + ", rotaionYStart: " + rotaionYStart);
                 avatar.UpdateArmRotation(currentPairingPosition, rotaionYEnd - rotaionYStart);
             }
 
