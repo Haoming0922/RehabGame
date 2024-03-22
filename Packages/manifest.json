@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "com.avaturn.webview": "https://github.com/avaturn/avaturn-unity-webview-sdk.git",
     "com.github-glitchenzo.nugetforunity": "https://github.com/GlitchEnzo/NuGetForUnity.git?path=/src/NuGetForUnity",
     "com.readyplayerme.core": "https://github.com/readyplayerme/rpm-unity-sdk-core.git",
     "com.unity.collab-proxy": "2.0.1",

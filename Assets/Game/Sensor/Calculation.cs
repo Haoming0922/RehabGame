@@ -84,7 +84,7 @@ namespace Game.Sensor
             float sign = ax >= 0 ? 1 : -1;
             float thetaRot = angleY + gy * sign * Time.deltaTime;
 
-            Debug.Log("[Haoming] thetaAcc: " + thetaAcc + ", thetaRot: " + thetaRot);
+            // Debug.Log("[Haoming] thetaAcc: " + thetaAcc + ", thetaRot: " + thetaRot);
             
             // Calculate the final angle using the complementary filter
             return weightAcc * thetaAcc + (1 - weightAcc) * thetaRot;

@@ -1,19 +1,13 @@
 {
     "m_SelectedDeviceId": "PA7J50PGFA220010W",
     "m_SelectedPackage": {
-        "deviceId": "",
-        "name": "",
-        "processId": 0,
+        "deviceId": "PA7J50PGFA220010W",
+        "name": "com.DefaultCompany.ReHybGame",
+        "processId": 10744,
         "exited": false
     },
     "m_SelectedPriority": 0,
     "m_KnownPackagesForSerialization": [
-        {
-            "deviceId": "PA7J50PGFA220010W",
-            "name": "com.DefaultCompany.SyncsenseTest",
-            "processId": 6780,
-            "exited": true
-        },
         {
             "deviceId": "PA7J50PGFA220010W",
             "name": "com.DefaultCompany.SyncsenseTest",
@@ -31,6 +25,24 @@
             "name": "com.DefaultCompany.SyncsenseTest",
             "processId": 32444,
             "exited": true
+        },
+        {
+            "deviceId": "PA7J50PGFA220010W",
+            "name": "com.DefaultCompany.ReHybGame",
+            "processId": 28680,
+            "exited": true
+        },
+        {
+            "deviceId": "PA7J50PGFA220010W",
+            "name": "com.DefaultCompany.ReHybGame",
+            "processId": 28686,
+            "exited": false
+        },
+        {
+            "deviceId": "PA7J50PGFA220010W",
+            "name": "com.DefaultCompany.ReHybGame",
+            "processId": 10744,
+            "exited": false
         }
     ],
     "m_Tags": {
