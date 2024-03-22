@@ -27,14 +27,8 @@ namespace Game.JumpJump
             // Application.targetFrameRate = -1;
             mass = transform.GetChild(0).gameObject;
             SetMass();
-            
-            sensorManager.SubscribeDumbbellEvent2();
         }
-
-        private void OnDestroy()
-        {
-            sensorManager.UnSubscribeDumbbellEvent2();
-        }
+        
 
         private void Update()
         {

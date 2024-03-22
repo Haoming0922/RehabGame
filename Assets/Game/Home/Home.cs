@@ -10,6 +10,13 @@ public class Home : MonoBehaviour
         SceneManager.LoadScene("Home");
     }
     
+    public void BackToPair()
+    {
+        SceneManager.LoadScene("Home");
+        GameObject.Find("HomeMenu").SetActive(false);
+        GameObject.Find("PairMenu").SetActive(true);
+    }
+    
     public void JumpJump()
     {
         SceneManager.LoadScene("Jump");
@@ -19,4 +26,20 @@ public class Home : MonoBehaviour
     {
         SceneManager.LoadScene("WheelChair");
     }
+    
+    public void DumbbellPair()
+    {
+        SceneManager.LoadScene("DumbbellPair");
+    }
+    
+    public void WheelchairPair()
+    {
+        SceneManager.LoadScene("WheelchairPair");
+    }
+    
+    public void CyclePair()
+    {
+        SceneManager.LoadScene("CyclePair");
+    }
+    
 }

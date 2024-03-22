@@ -37,10 +37,8 @@ namespace Game.JumpJump
         {
             gameStateManager.PrepareEvent += OnGameStart;
             gameStateManager.PrepareEvent += DisablePlayerControl;
-            gameStateManager.PrepareEvent += DisableCameraFollow;
 
             gameStateManager.PlayEvent += EnablePlayerControl;
-            gameStateManager.PlayEvent += EnableCameraFollow;
 
             gameStateManager.EndEvent += DisablePlayerControl;
             
@@ -51,10 +49,8 @@ namespace Game.JumpJump
         {
             gameStateManager.PrepareEvent -= OnGameStart;
             gameStateManager.PrepareEvent -= DisablePlayerControl;
-            gameStateManager.PrepareEvent -= DisableCameraFollow;
             
             gameStateManager.PlayEvent -= EnablePlayerControl;
-            gameStateManager.PlayEvent -= EnableCameraFollow;
             
             gameStateManager.EndEvent -= DisablePlayerControl;
         }
@@ -100,8 +96,6 @@ namespace Game.JumpJump
             textRight.gameObject.SetActive(false);
             textGuide.gameObject.SetActive(false);
             
-            gameStateManager.SwitchGameState(GameState.PLAY);
-            
             GenerateLevels();
             yield return new WaitForSeconds(2f);
             
@@ -121,6 +115,8 @@ namespace Game.JumpJump
             
             textGuide.gameObject.SetActive(false);
             SetControlSensor(null);
+            
+            gameStateManager.SwitchGameState(GameState.PLAY);
             
             yield return new WaitForSeconds(.5f);
         }
@@ -153,7 +149,7 @@ namespace Game.JumpJump
         public Vector3 GetCurrentPosition()
         {
             Vector3 currentPosition = cubes[currentCube].position;
-            currentPosition.y += cubes[currentCube].lossyScale.y +1;
+            currentPosition.y += cubes[currentCube].lossyScale.y + 1;
             return currentPosition;
         }
         

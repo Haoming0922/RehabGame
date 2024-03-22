@@ -927,7 +927,7 @@ MonoBehaviour:
   - {fileID: 105821816}
   - {fileID: 1318666787}
   firstCube: {fileID: 1318666788}
-  totalCubes: 50
+  totalCubes: 20
   textLeft: {fileID: 1677148827}
   textRight: {fileID: 607958995}
   textGuide: {fileID: 781858867}
@@ -1250,7 +1250,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &646062554
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3110,7 +3110,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1424378943}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1e1dc7ef8ae0935498bc28fbae80b281, type: 3}
   m_Name: 

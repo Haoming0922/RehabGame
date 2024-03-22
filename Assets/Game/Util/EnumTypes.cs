@@ -10,9 +10,9 @@ namespace Game.Util
     
     public enum Exercise
     {
-        WHEELCHAIR,
-        DUMBBELL,
-        CYCLE
+        Wheelchair,
+        Dumbbell,
+        Cycle
     }
 
     public enum SensorPosition

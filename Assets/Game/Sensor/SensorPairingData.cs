@@ -17,8 +17,10 @@ namespace Game.Sensor
         public Exercise exercise;
         public string leftSensorAddress;
         public RotationDirection leftSensorDirection;
+        public float leftSensorGravity;
         public string rightSensorAddress;
         public RotationDirection rightSensorDirection;
+        public float rightSensorGravity;
 
 
         public SensorPairingData()
@@ -60,6 +62,21 @@ namespace Game.Sensor
                 default: break;
             }
         }
+        
+        public void SetSensorGravity(SensorPosition position, float gravity)
+        {
+            switch (position)
+            {
+                case SensorPosition.LEFT:
+                    leftSensorGravity = gravity;
+                    break;
+                case SensorPosition.RIGHT:
+                    rightSensorGravity = gravity;
+                    break;
+                default: break;
+            }
+        }
+        
 
         #endregion
 
