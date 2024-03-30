@@ -10,15 +10,16 @@ namespace Game.Util
     
     public enum Exercise
     {
-        WHEELCHAIR,
-        DUMBBELL,
-        CYCLE
+        Wheelchair,
+        Dumbbell,
+        Cycle
     }
 
     public enum SensorPosition
     {
         LEFT,
-        RIGHT
+        RIGHT,
+        NULL
     }
 
 // XPOSITIVE means: wheel rotates around x axis, and when gyro.x > 0, wheel rotates forward

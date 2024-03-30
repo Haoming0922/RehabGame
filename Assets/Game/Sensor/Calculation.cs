@@ -15,6 +15,13 @@ namespace Game.Sensor
             return moving > 15f;
         }
         
+        public static bool IsCycle(SensorDataReceived data)
+        {
+            float moving = Mathf.Abs(data.accX) + Mathf.Abs(data.accY) + Mathf.Abs(data.accZ);
+            // Debug.Log("[Haoming] IsMove: " + moving);
+            return moving > 20f;
+        }
+        
         public static bool IsRaise(SensorDataReceived data)
         {
             float threshold = 10;
@@ -41,6 +48,12 @@ namespace Game.Sensor
             if (averageMotion > threshold) return Mathf.Log10(averageMotion / threshold);
             else return 0;
         }
+        
+        public static float GetRestGravity(SensorDataReceived data)
+        {
+            float averageMotion = Mathf.Pow(data.accX, 2) + Mathf.Pow(data.accY, 2) + Mathf.Pow(data.accZ, 2);
+            return Mathf.Sqrt(averageMotion);
+        }
 
         public static SensorDataReceived AverageQueue(Queue<SensorDataReceived> dataQueue)
         {
@@ -65,13 +78,11 @@ namespace Game.Sensor
         }
         
         
-        public static float ComplementaryFilterRotationY(float gy, float ax, float angleY, float weightAcc)
+        public static float ComplementaryFilterRotationY(float gy, float ax, float angleY, float weightAcc, float gravity)
         {
-            const float gravity = 9.8f;
-
-            // Clamp ax value within range [-9.8, 9.8]
-            if (ax < -gravity) ax = -gravity;
-            else if (ax > gravity) ax = gravity;
+            // Clamp ax value within range
+            if (ax < -Mathf.Abs(gravity)) ax = -Mathf.Abs(gravity);
+            else if (ax > Mathf.Abs(gravity)) ax = Mathf.Abs(gravity);
 
             // Calculate thetaAcc (angle from accelerometer)
             float thetaAcc = Mathf.Acos(ax / gravity) * Mathf.Rad2Deg;
@@ -80,6 +91,8 @@ namespace Game.Sensor
             float sign = ax >= 0 ? 1 : -1;
             float thetaRot = angleY + gy * sign * Time.deltaTime;
 
+            // Debug.Log("[Haoming] thetaAcc: " + thetaAcc + ", thetaRot: " + thetaRot);
+            
             // Calculate the final angle using the complementary filter
             return weightAcc * thetaAcc + (1 - weightAcc) * thetaRot;
         }

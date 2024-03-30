@@ -33,7 +33,7 @@ namespace Game.Avatar
             
             if (previewAvatar != null)
             {
-                SetupAvatar(previewAvatar);
+                // SetupAvatar(previewAvatar);
             }
             if (loadOnStart)
             {
@@ -50,8 +50,8 @@ namespace Game.Avatar
         {
             if (previewAvatar != null)
             {
-                Destroy(previewAvatar);
-                previewAvatar = null;
+                // Destroy(previewAvatar);
+                previewAvatar.SetActive(false);
             }
             SetupAvatar(args.Avatar);
             OnLoadComplete?.Invoke();
@@ -71,13 +71,18 @@ namespace Game.Avatar
             avatar.transform.localRotation = Quaternion.Euler(0, 180, 0);
             avatar.transform.localScale = new Vector3(60, 60, 60);
             
-            // Animator animator = avatar.GetComponent<Animator>();
-            // if (animator != null)
-            // {
-            //     animator.runtimeAnimatorController = animatorController;
-            //     animator.avatar = avatarToSet;
-            //     animator.applyRootMotion = false;
-            // }
+            SetChildTransform(avatar.transform);
+            
+            Destroy(previewAvatar);           
+            
+            Animator animator = avatar.GetComponent<Animator>();
+            if (animator != null)
+            {
+                animator.runtimeAnimatorController = animatorController;
+                animator.avatar = avatarToSet;
+                animator.applyRootMotion = false;
+            }
+            
         }
 
         public void LoadAvatar(string url)
@@ -87,5 +92,19 @@ namespace Game.Avatar
             avatarObjectLoader.LoadAvatar(avatarUrl);
         }
 
+        private void SetChildTransform(Transform avatar)
+        {
+            Transform leftShoulder = avatar.Find("Armature").Find("Hips").Find("Spine").Find("Spine1").Find("Spine2").Find("LeftShoulder");
+            Transform leftHand = leftShoulder.GetChild(0).GetChild(0).GetChild(0);
+            Transform rightShoulder = avatar.Find("Armature").Find("Hips").Find("Spine").Find("Spine1").Find("Spine2").Find("RightShoulder");
+            Transform rightHand = rightShoulder.GetChild(0).GetChild(0).GetChild(0);
+            
+            leftShoulder.localRotation = Quaternion.Euler(leftShoulder.localRotation.x - 90f, leftShoulder.localRotation.y, leftShoulder.localRotation.z);
+                
+            leftHand.localScale *= 0.8f;
+            rightHand.localScale *= 0.8f;
+            
+        }
+        
     }
 }
