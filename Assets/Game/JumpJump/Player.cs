@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Game.Avatar;
 using TMPro;
 using UnityEngine;
 using Game.Sensor;
@@ -20,19 +21,28 @@ namespace Game.JumpJump
         private float force = 0;
         private Vector3 jumpPosition = new Vector3();
 
-        private bool isOnGround = false;
+        private bool isOnGround = true;
+
+        private JumpAnimation jumpAnimation;
         
         void Start()
         {
             // Application.targetFrameRate = -1;
             mass = transform.GetChild(0).gameObject;
             SetMass();
+            jumpAnimation = GetComponent<JumpAnimation>();
+            jumpAnimation.Idle();
         }
         
 
         private void Update()
         {
             SensorJump();
+            if (isOnGround)
+            {
+                // gameManager.ToggleText(true);
+                jumpAnimation.Idle();
+            }
         }
 
         private void SensorJump()
@@ -40,14 +50,16 @@ namespace Game.JumpJump
             float input = sensorManager.GetData(gameManager.currentController);
             
             if (input >= 0 && isOnGround)
-            {
+            { 
                 force = input;
                 jumpPosition = GetEndPosition();
-                if (jumpPosition != transform.position) DrawCurve(jumpPosition);
+                if ((jumpPosition - transform.position).magnitude > 2f) DrawCurve(jumpPosition);
             }
 
-            if (input < 0 && force > 0)
+            if (input < 0 && (jumpPosition - transform.position).magnitude > 2f)
             {
+                // jumpAnimation.Jump();
+                gameManager.ToggleText(false);
                 StartCoroutine(MoveAlongCurve(jumpPosition));
                 force = 0;
             }
@@ -58,7 +70,7 @@ namespace Game.JumpJump
             if (Input.GetKey(KeyCode.J) && isOnGround)
             {
                 force++;
-                if (position != transform.position) DrawCurve(position);
+                if ((position - transform.position).magnitude > 2f) DrawCurve(position);
                 else
                 {
                     for (int i = 0; i < curve.transform.childCount; i++)
@@ -80,6 +92,7 @@ namespace Game.JumpJump
 
         private IEnumerator MoveAlongCurve(Vector3 jumpPosition)
         {
+            
             for (int i = 0; i < curve.transform.childCount; i++)
             {
                 curve.transform.GetChild(i).gameObject.SetActive(false);
@@ -92,7 +105,7 @@ namespace Game.JumpJump
             Vector3 p3 = jumpPosition;
 
             // this.GetComponent<Rigidbody>().useGravity = false;
-
+            
             float t = 0;
             while (t < 1)
             {
@@ -162,8 +175,10 @@ namespace Game.JumpJump
             Vector3 targetPosition = gameManager.GetTargetPosition();
             float targetForce =  (targetPosition - currentPosition).magnitude / gameManager.MaxDistance;
 
-            Debug.Log("[Haoming] Current Force: " + force);
+            // Debug.Log("[Haoming] Current Force: " + force);
         
+            if(Mathf.Abs(force/targetForce) > 0.7f && Mathf.Abs(force/targetForce) < 1.3f) return targetPosition;
+            
             return currentPosition + force / targetForce * (targetPosition - currentPosition);
         }
 

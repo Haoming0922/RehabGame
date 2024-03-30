@@ -18,7 +18,8 @@ namespace Game.Util
     public enum SensorPosition
     {
         LEFT,
-        RIGHT
+        RIGHT,
+        NULL
     }
 
 // XPOSITIVE means: wheel rotates around x axis, and when gyro.x > 0, wheel rotates forward

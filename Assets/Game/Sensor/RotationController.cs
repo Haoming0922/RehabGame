@@ -44,14 +44,18 @@ namespace Game.Sensor
                     gravity = pairingData.rightSensorGravity;
                     if(userConfig != null) maxRotationAngle = userConfig.maxRightArmRotationAngle;
                     break;
+                case SensorPosition.NULL:
+                    sensorAddress = pairingData.cycleSensorAddress;
+                    // Debug.Log("Haoming: RotationController " + sensorAddress);
+                    break;
             }
             
         }
 
         public void WheelchairControlEvent(SensorDataReceived sensorData)
         {
-            Debug.Log("Haoming: sensorAddress" + sensorAddress + 
-                      "Haoming: sensorData.deviceAddress" + sensorData.deviceAddress);
+            // Debug.Log("Haoming: sensorAddress" + sensorAddress + 
+            //           "Haoming: sensorData.deviceAddress" + sensorData.deviceAddress);
             
             if (sensorAddress == sensorData.deviceAddress)
             {
@@ -147,7 +151,7 @@ namespace Game.Sensor
                 default: break;
             }
             
-            Debug.Log("Haoming: data" + data);
+            // Debug.Log("Haoming: data" + data);
             
             if (dataWindow.Count < lowPassWindowSize)
             {
@@ -161,7 +165,7 @@ namespace Game.Sensor
 
             averageValue = Calculation.AverageQueue(dataWindow);
             
-            Debug.Log("Haoming: averageValue" + averageValue);
+            // Debug.Log("Haoming: averageValue" + averageValue);
             
             IsMove = Calculation.IsMove(sensorData);
         }
@@ -199,8 +203,18 @@ namespace Game.Sensor
             }
         }
 
-
-
+        
+        public void CycleControlEvent(SensorDataReceived sensorData)
+        {
+            // Debug.Log("Haoming: sensorAddress" + sensorAddress + 
+            //           "Haoming: sensorData.deviceAddress" + sensorData.deviceAddress);
+            
+            if (sensorAddress == sensorData.deviceAddress)
+            {
+                value = Calculation.IsCycle(sensorData) ? 1 : 0;
+            }
+        }
+        
 
         /*
      

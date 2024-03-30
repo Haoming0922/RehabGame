@@ -222,11 +222,18 @@ namespace Game.JumpJump
             if (currentCube == cubes.Count - 1)
             {
                 textGuide.gameObject.SetActive(true);
+                textLeft.gameObject.SetActive(false);
+                textRight.gameObject.SetActive(false);
                 textGuide.text = "Congratulations";
                 
                 gameStateManager.SwitchGameState(GameState.END);
             }
         }
         
+        public void ToggleText(bool toggle)
+        {
+            textLeft.gameObject.SetActive(toggle);
+            textRight.gameObject.SetActive(toggle);
+        }
     }
 }
