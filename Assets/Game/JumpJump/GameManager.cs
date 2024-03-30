@@ -155,8 +155,7 @@ namespace Game.JumpJump
         
         public Vector3 GetTargetPosition()
         {
-            Vector3 targetPosition = cubes[currentCube + 1].position;
-            targetPosition.y += cubes[currentCube + 1].lossyScale.y + 1;
+            Vector3 targetPosition = cubes[currentCube + 1].transform.GetChild(0).position;
             return targetPosition;
         }
 
@@ -205,9 +204,9 @@ namespace Game.JumpJump
 
                     cubes.Add(newCube.transform);
 
-                    if ((lastCube.transform.position - newCube.transform.position).magnitude > MaxDistance)
+                    if ((lastCube.transform.GetChild(0).position - newCube.transform.GetChild(0).position).magnitude > MaxDistance)
                     {
-                        MaxDistance = (lastCube.transform.position - newCube.transform.position).magnitude;
+                        MaxDistance = (lastCube.transform.GetChild(0).position - newCube.transform.GetChild(0).position).magnitude;
                     }
                     
                     lastCube = newCube.transform;

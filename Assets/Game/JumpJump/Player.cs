@@ -174,6 +174,7 @@ namespace Game.JumpJump
             Vector3 currentPosition = transform.position;
             Vector3 targetPosition = gameManager.GetTargetPosition();
             float targetForce =  (targetPosition - currentPosition).magnitude / gameManager.MaxDistance;
+            targetForce = Mathf.Clamp(targetForce, 0f, 1f);
 
             // Debug.Log("[Haoming] Current Force: " + force);
         
