@@ -20,7 +20,7 @@ namespace Game.Sensor
 
         IEnumerator WheelchairPairCalibrate()
         {
-            SensorPairingData sensorPairingData = new SensorPairingData(Exercise.WHEELCHAIR);
+            SensorPairingData sensorPairingData = new SensorPairingData(Exercise.Wheelchair);
 
             guideText.text = "Please mount the sensors to the wheelchair, and roll both wheels to wake them...";
             yield return new WaitForSeconds(5);
@@ -47,7 +47,7 @@ namespace Game.Sensor
                 yield return new WaitForSeconds(1);
             }
 
-            DataSaver.SaveData("Wheelchair.sensorpair", typeof(SensorPairingData));
+            DataSaver.SaveData("Wheelchair.sensorpair", sensorPairingData);
             gameObject.transform.GetChild(0).gameObject.GetComponent<Button>().onClick.Invoke();
         }
 
