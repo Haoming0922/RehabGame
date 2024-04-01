@@ -20,19 +20,22 @@ namespace Game.Sensor
         private void Awake()
         {
             LoadConfigData();
-            
-            gameInput.Add(SensorPosition.LEFT, new RotationController(SensorPosition.LEFT, _sensorPairingData, _userConfig));
-            gameInput.Add(SensorPosition.RIGHT, new RotationController(SensorPosition.RIGHT, _sensorPairingData, _userConfig));
 
             switch (exercise)
             {
                 case Exercise.Wheelchair:
+                    gameInput.Add(SensorPosition.LEFT, new RotationController(SensorPosition.LEFT, _sensorPairingData, _userConfig));
+                    gameInput.Add(SensorPosition.RIGHT, new RotationController(SensorPosition.RIGHT, _sensorPairingData, _userConfig));
                     SubscribeWheelchairEvent();
                     break;
                 case Exercise.Dumbbell:
+                    gameInput.Add(SensorPosition.LEFT, new RotationController(SensorPosition.LEFT, _sensorPairingData, _userConfig));
+                    gameInput.Add(SensorPosition.RIGHT, new RotationController(SensorPosition.RIGHT, _sensorPairingData, _userConfig));
                     SubscribeDumbbellEvent2();
                     break;
                 case Exercise.Cycle:
+                    gameInput.Add(SensorPosition.NULL, new RotationController(SensorPosition.NULL, _sensorPairingData, _userConfig));
+                    SubscribeCycleEvent();
                     break;
                 default:
                     break;
@@ -46,6 +49,7 @@ namespace Game.Sensor
         {
             _sensorPairingData = (SensorPairingData) DataSaver.LoadData(exercise.ToString() + ".sensorpair", typeof(SensorPairingData));
             if(_sensorPairingData == null) BackHome();
+            Debug.Log("Haoming: LoadConfigData " + _sensorPairingData.cycleSensorAddress);
 
             if (exercise == Exercise.Dumbbell)
             {
@@ -97,8 +101,20 @@ namespace Game.Sensor
             SyncsenseSensorManager.OnSensorDataReceivedEvent -= gameInput[SensorPosition.RIGHT].DumbbellControlEvent2;
         }
         
+        public void SubscribeCycleEvent()
+        {
+            Debug.Log("Haoming: Subscribe Success");
+            SyncsenseSensorManager.OnSensorDataReceivedEvent += gameInput[SensorPosition.NULL].CycleControlEvent;
+        }
+        
+        public void UnSubscribeCycleEvent()
+        {
+            SyncsenseSensorManager.OnSensorDataReceivedEvent -= gameInput[SensorPosition.NULL].CycleControlEvent;
+        }
+        
         public float GetData(SensorPosition position)
         {
+            // Debug.Log("Haoming: " + gameInput[position].value);
             return gameInput[position].value;
         }
         
@@ -131,19 +147,22 @@ namespace Game.Sensor
 
         public void OnDestroy()
         {
+            SyncsenseSensorManager.Instance.StopScan();
+            
             SyncsenseSensorManager.Instance.DisconnectFromDevice(_sensorPairingData.leftSensorAddress);
             SyncsenseSensorManager.Instance.DisconnectFromDevice(_sensorPairingData.rightSensorAddress);
+            SyncsenseSensorManager.Instance.DisconnectFromDevice(_sensorPairingData.cycleSensorAddress);
+            SyncsenseSensorManager.OnScanResultEvent -= SensorManagerOnScanResultEvent;
+            SyncsenseSensorManager.OnScanErrorEvent -= SensorManagerOnScanErrorEvent;
 
-            SyncsenseSensorManager.OnScanResultEvent += SensorManagerOnScanResultEvent;
-            SyncsenseSensorManager.OnScanErrorEvent += SensorManagerOnScanErrorEvent;
-
-            SyncsenseSensorManager.OnDeviceConnectionStateChangeEvent +=
+            SyncsenseSensorManager.OnDeviceConnectionStateChangeEvent -=
                 SensorManagerOnDeviceConnectionStateChangeEvent;
-            SyncsenseSensorManager.OnServicesDiscoveredEvent += SensorManagerOnOnServicesDiscoveredEvent;
+            SyncsenseSensorManager.OnServicesDiscoveredEvent -= SensorManagerOnOnServicesDiscoveredEvent;
             
             UnSubscribeWheelchairEvent();
             UnSubscribeDumbbellEvent1();
             UnSubscribeDumbbellEvent2();
+            UnSubscribeCycleEvent();
         }
 
         private void SensorManagerOnScanErrorEvent(ScanError obj)
@@ -157,7 +176,8 @@ namespace Game.Sensor
             if (obj.name != null && obj.name.Equals("Cadence_Sensor"))
             {
                 if (obj.address == _sensorPairingData.leftSensorAddress ||
-                    obj.address == _sensorPairingData.rightSensorAddress)
+                    obj.address == _sensorPairingData.rightSensorAddress || 
+                    obj.address == _sensorPairingData.cycleSensorAddress)
                 {
                     SyncsenseSensorManager.Instance.ConnectToDevice(obj.address);
                 }
