@@ -61,7 +61,7 @@ public class WheelchairController : MonoBehaviour
         float rightInput1 = rightAction.ReadValue<Vector2>()[1];
         float leftInput2 = sensorManager.GetData(SensorPosition.LEFT);
         float rightInput2 = sensorManager.GetData(SensorPosition.RIGHT);
-        Debug.Log("leftInput2: " + leftInput2 + ", rightInput2: " + rightInput2);
+        // Debug.Log("leftInput2: " + leftInput2 + ", rightInput2: " + rightInput2);
 
         Vector2 joyStick = joyStickAction.ReadValue<Vector2>();
         float leftInput3 = joyStick.y >= 0 ? joyStick.y + joyStick.x : joyStick.y - joyStick.x;

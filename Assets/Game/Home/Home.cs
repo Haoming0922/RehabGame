@@ -27,6 +27,11 @@ public class Home : MonoBehaviour
         SceneManager.LoadScene("WheelChair");
     }
     
+    public void Cycle()
+    {
+        SceneManager.LoadScene("Cycle");
+    }
+    
     public void DumbbellPair()
     {
         SceneManager.LoadScene("DumbbellPair");

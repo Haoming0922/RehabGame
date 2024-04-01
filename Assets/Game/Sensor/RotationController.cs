@@ -22,10 +22,10 @@ namespace Game.Sensor
         private float rotationThreshold = 18f;
         public bool IsMove { get; private set; }
 
-        private float angleStart = 0f;
-        private float angleEnd = 0f;
+        private float angleStart = 5f;
+        private float angleEnd = 5f;
 
-        private float CFWeightAcc = 0.18f;
+        private float CFWeightAcc = 0.13f;
         private float gravity = 9.8f;
         
         public RotationController(SensorPosition position, SensorPairingData pairingData, UserConfig userConfig)
@@ -44,14 +44,18 @@ namespace Game.Sensor
                     gravity = pairingData.rightSensorGravity;
                     if(userConfig != null) maxRotationAngle = userConfig.maxRightArmRotationAngle;
                     break;
+                case SensorPosition.NULL:
+                    sensorAddress = pairingData.cycleSensorAddress;
+                    // Debug.Log("Haoming: RotationController " + sensorAddress);
+                    break;
             }
             
         }
 
         public void WheelchairControlEvent(SensorDataReceived sensorData)
         {
-            Debug.Log("Haoming: sensorAddress" + sensorAddress + 
-                      "Haoming: sensorData.deviceAddress" + sensorData.deviceAddress);
+            // Debug.Log("Haoming: sensorAddress" + sensorAddress + 
+            //           "Haoming: sensorData.deviceAddress" + sensorData.deviceAddress);
             
             if (sensorAddress == sensorData.deviceAddress)
             {
@@ -80,19 +84,21 @@ namespace Game.Sensor
 
         private void DumbbellLowPassFiltRotation(SensorDataReceived sensorData)
         {
-            float ax = sensorData.accX;
-            if (ax < -gravity) ax = -gravity;
-            else if (ax > gravity) ax = gravity;
+            // float ax = sensorData.accX;
+            // if (ax < -gravity) ax = -gravity;
+            // else if (ax > gravity) ax = gravity;
+            //
+            // if (Calculation.IsDownX(sensorData) && !Calculation.IsMove(sensorData)){
+            //     angleStart = Mathf.Acos(ax / gravity) * Mathf.Rad2Deg;
+            //     angleEnd = angleStart;
+            // }
+            // else
+            // {
+            //     angleEnd = Calculation.ComplementaryFilterRotationY(sensorData.gyroY, sensorData.accX, angleEnd, CFWeightAcc, gravity);
+            // }
             
-            if (Calculation.IsDownX(sensorData) && !Calculation.IsMove(sensorData)){
-                angleStart = Mathf.Acos(ax / gravity) * Mathf.Rad2Deg;
-                angleEnd = angleStart;
-            }
-            else
-            {
-                angleEnd = Calculation.ComplementaryFilterRotationY(sensorData.gyroY, sensorData.accX, angleEnd, CFWeightAcc, gravity);
-            }
-            
+            angleEnd = Calculation.ComplementaryFilterRotationY(sensorData.gyroY, sensorData.accX, angleEnd, CFWeightAcc, gravity);
+        
             if (dataWindow.Count < lowPassWindowSize)
             {
                 dataWindow.Enqueue(angleEnd - angleStart);
@@ -114,8 +120,8 @@ namespace Game.Sensor
         
         private void DumbbellRotationToGameInput2(SensorDataReceived sensorData) //JumpJump
         {
-            float sign = Mathf.Sign(sensorData.gyroY * Mathf.Sign(sensorData.accX));
-            if (sign >= 0f) // up
+            float rotate = sensorData.gyroY * Mathf.Sign(sensorData.accX);
+            if (rotate >= -15f) // up
             {
                 averageValue = Mathf.Clamp(averageValue, 0, maxRotationAngle);
                 value = averageValue / maxRotationAngle;
@@ -147,7 +153,7 @@ namespace Game.Sensor
                 default: break;
             }
             
-            Debug.Log("Haoming: data" + data);
+            // Debug.Log("Haoming: data" + data);
             
             if (dataWindow.Count < lowPassWindowSize)
             {
@@ -161,7 +167,7 @@ namespace Game.Sensor
 
             averageValue = Calculation.AverageQueue(dataWindow);
             
-            Debug.Log("Haoming: averageValue" + averageValue);
+            // Debug.Log("Haoming: averageValue" + averageValue);
             
             IsMove = Calculation.IsMove(sensorData);
         }
@@ -199,8 +205,18 @@ namespace Game.Sensor
             }
         }
 
-
-
+        
+        public void CycleControlEvent(SensorDataReceived sensorData)
+        {
+            // Debug.Log("Haoming: sensorAddress" + sensorAddress + 
+            //           "Haoming: sensorData.deviceAddress" + sensorData.deviceAddress);
+            
+            if (sensorAddress == sensorData.deviceAddress)
+            {
+                value = Calculation.IsCycle(sensorData) ? 1 : 0;
+            }
+        }
+        
 
         /*
      

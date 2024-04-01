@@ -9,6 +9,6 @@ PhysicMaterial:
   m_Name: Wheelchair
   dynamicFriction: 0.706
   staticFriction: 0.706
-  bounciness: 0
+  bounciness: 0.1
   frictionCombine: 0
   bounceCombine: 0
