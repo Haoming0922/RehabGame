@@ -29,7 +29,7 @@ namespace Game.JumpJump
         {
             // Application.targetFrameRate = -1;
             mass = transform.GetChild(0).gameObject;
-            SetMass();
+            // SetMass();
             jumpAnimation = GetComponent<JumpAnimation>();
             jumpAnimation.Idle();
         }
@@ -38,61 +38,50 @@ namespace Game.JumpJump
         private void Update()
         {
             SensorJump();
-            if (isOnGround)
-            {
-                // gameManager.ToggleText(true);
-                jumpAnimation.Idle();
-            }
+            // keyBoardInput();
         }
 
         private void SensorJump()
         {
             float input = sensorManager.GetData(gameManager.currentController);
-            
-            if (input >= 0 && isOnGround)
-            { 
-                force = input;
-                jumpPosition = GetEndPosition();
-                if ((jumpPosition - transform.position).magnitude > 2f) DrawCurve(jumpPosition);
-            }
 
-            if (input < 0 && (jumpPosition - transform.position).magnitude > 2f)
+            if (input > 0)
             {
-                // jumpAnimation.Jump();
+                force = input;
+            }
+            
+            if (input < 0 && IsJump() && isOnGround)
+            {
                 gameManager.ToggleText(false);
                 StartCoroutine(MoveAlongCurve(jumpPosition));
                 force = 0;
             }
         }
 
-        private void keyBoardInput(Vector3 position)
+        private void keyBoardInput()
         {
             if (Input.GetKey(KeyCode.J) && isOnGround)
             {
-                force++;
-                if ((position - transform.position).magnitude > 2f) DrawCurve(position);
-                else
-                {
-                    for (int i = 0; i < curve.transform.childCount; i++)
-                    {
-                        curve.transform.GetChild(i).gameObject.SetActive(false);
-                    }
-                }
+                force += 0.01f;
+                // if (force >= 0.2 && (jumpPosition - transform.position).magnitude > 2f)
+                // {
+                //     DrawCurve(jumpPosition);
+                // }
             }
-            else
+
+            if (!Input.GetKey(KeyCode.J) && IsJump() && isOnGround)
             {
-                if (force > 0)
-                {
-                    StartCoroutine(MoveAlongCurve(position));
-                    force = 0;
-                }
+                gameManager.ToggleText(false);
+                StartCoroutine(MoveAlongCurve(jumpPosition));
+                force = 0;
             }
+
+            // Debug.Log(force);
         }
 
 
         private IEnumerator MoveAlongCurve(Vector3 jumpPosition)
         {
-            
             for (int i = 0; i < curve.transform.childCount; i++)
             {
                 curve.transform.GetChild(i).gameObject.SetActive(false);
@@ -100,7 +89,7 @@ namespace Game.JumpJump
 
             // Bezier Curve
             Vector3 p0 = transform.position;
-            Vector3 p1 = new Vector3(transform.position.x, transform.position.y + 6, transform.position.z);
+            Vector3 p1 = new Vector3(transform.position.x, transform.position.y + 5, transform.position.z);
             Vector3 p2 = new Vector3(jumpPosition.x, jumpPosition.y + 6, jumpPosition.z);
             Vector3 p3 = jumpPosition;
 
@@ -140,7 +129,7 @@ namespace Game.JumpJump
         {
             // Bezier Curve
             Vector3 p0 = transform.position;
-            Vector3 p1 = new Vector3(transform.position.x, transform.position.y + 6, transform.position.z);
+            Vector3 p1 = new Vector3(transform.position.x, transform.position.y + 10, transform.position.z + 3);
             Vector3 p2 = new Vector3(jumpPosition.x, jumpPosition.y + 6, jumpPosition.z);
             Vector3 p3 = jumpPosition;
             
@@ -169,18 +158,22 @@ namespace Game.JumpJump
         }
         
 
-        private Vector3 GetEndPosition()
+        private bool IsJump()
         {
             Vector3 currentPosition = transform.position;
             Vector3 targetPosition = gameManager.GetTargetPosition();
-            float targetForce =  (targetPosition - currentPosition).magnitude / gameManager.MaxDistance;
-            targetForce = Mathf.Clamp(targetForce, 0f, 1f);
-
-            // Debug.Log("[Haoming] Current Force: " + force);
-        
-            if(Mathf.Abs(force/targetForce) > 0.7f && Mathf.Abs(force/targetForce) < 1.3f) return targetPosition;
+            // float targetForce =  (targetPosition - currentPosition).magnitude / gameManager.MaxDistance;
+            // targetForce = Mathf.Clamp(targetForce, 0f, 1f);
+            // return currentPosition + force / targetForce * (targetPosition - currentPosition);
             
-            return currentPosition + force / targetForce * (targetPosition - currentPosition);
+            bool isJump = force > 0.5f ? true : false;
+
+            if (isJump)
+            {
+                jumpPosition = targetPosition;
+                return true;
+            }
+            else return false;
         }
 
         private void OnCollisionStay(Collision other)
@@ -189,10 +182,11 @@ namespace Game.JumpJump
             {
                 gameManager.UpdateCurrentCube(other.gameObject.transform.parent.GetSiblingIndex());
                 isOnGround = true;
+                // jumpAnimation.Idle();
                 //cam.LookAt(transform.position);
             }
         }
-
+        
         private void OnCollisionExit(Collision other)
         {
             if (other.gameObject.CompareTag("Ground"))

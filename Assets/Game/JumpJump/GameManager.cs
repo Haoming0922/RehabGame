@@ -14,6 +14,9 @@ namespace Game.JumpJump
     {
         public SensorManager sensorManager;
         public GameStateManager gameStateManager;
+
+        public JumpAnimation jumpAnimation;
+        
         [Header("level Generator")] 
         public int seed;
         public List<GameObject> cubePrefs;
@@ -43,6 +46,8 @@ namespace Game.JumpJump
             gameStateManager.EndEvent += DisablePlayerControl;
             
             gameStateManager.SwitchGameState(GameState.PREPARE);
+            
+            jumpAnimation = GetComponent<JumpAnimation>();
         }
 
         private void OnDestroy()
@@ -126,7 +131,7 @@ namespace Game.JumpJump
         public void SetControlSensor(SensorPosition? position)
         {
             if (position != null) currentController = position.Value;
-            else currentController = Random.Range(0, 2) == 0 ? SensorPosition.LEFT : SensorPosition.RIGHT;
+            else currentController =  currentCube % 2 == 0 ? SensorPosition.LEFT : SensorPosition.RIGHT;
             switch (currentController)
             {
                 case SensorPosition.LEFT:
@@ -156,18 +161,22 @@ namespace Game.JumpJump
         public Vector3 GetTargetPosition()
         {
             Vector3 targetPosition = cubes[currentCube + 1].transform.GetChild(0).position;
+            targetPosition.y += 1;
             return targetPosition;
         }
 
         public void UpdateCurrentCube(int idx)
         {
-            currentCube = idx;
-            Debug.Log(currentCube);
-
-            if (lastCube < currentCube)
+            if (GameStateManager.State == GameState.PLAY)
             {
+                currentCube = idx;
                 SetControlSensor(null);
-                lastCube = currentCube;
+                // Debug.Log(currentCube);
+
+                if (lastCube < currentCube)
+                {
+                    lastCube = currentCube;
+                }
             }
         }
         
@@ -198,7 +207,7 @@ namespace Game.JumpJump
                     newCube.transform.position = lastCube.position +
                                                  lastCube.right * Random.Range(-10f, 10f) +
                                                  lastCube.forward * Random.Range(6f, 15f) +
-                                                 new Vector3(0, Random.Range(-5f, 5f), 0);
+                                                 new Vector3(0, Random.Range(-4f, 4f), 0);
                     newCube.transform.Rotate(Random.Range(-10f, 10f), totalRotation / cubeInGroup * i, Random.Range(-5f, 5f));
                     newCube.name = "Cube" + cubeIdx;
 
@@ -224,6 +233,7 @@ namespace Game.JumpJump
                 textLeft.gameObject.SetActive(false);
                 textRight.gameObject.SetActive(false);
                 textGuide.text = "Congratulations";
+                jumpAnimation.Win();
                 
                 gameStateManager.SwitchGameState(GameState.END);
             }
