@@ -10,6 +10,7 @@ namespace Game.Bicycle
 	public class BicycleVehicle : MonoBehaviour
 	{
 		public SensorManager sensorManager;
+		public TurnController turnController;
 
 		float horizontalInput;
 		float vereticallInput;
@@ -57,6 +58,7 @@ namespace Game.Bicycle
 		// Update is called once per frame
 		void FixedUpdate()
 		{
+
 			GetInput();
 			HandleEngine();
 			HandleSteering();
@@ -69,7 +71,9 @@ namespace Game.Bicycle
 
 		public void GetInput()
 		{
-			vereticallInput = sensorManager.GetData(SensorPosition.NULL);
+			// vereticallInput = sensorManager.GetData(SensorPosition.NULL);
+			vereticallInput = 1;
+			horizontalInput = Mathf.Clamp(turnController.horizontalInput / maxSteeringAngle, 0 , 1);
 			// horizontalInput = -0.05f;
 			// horizontalInput = Input.GetAxis("Horizontal");
 			// vereticallInput = Input.GetAxis("Vertical");
@@ -148,8 +152,9 @@ namespace Game.Bicycle
 		{
 			SpeedSteerinReductor();
 
-			currentSteeringAngle = Mathf.Lerp(currentSteeringAngle, maxSteeringAngle * horizontalInput, turnSmoothing);
-			frontWheel.steerAngle = currentSteeringAngle;
+			// currentSteeringAngle = Mathf.Lerp(currentSteeringAngle, horizontalInput, turnSmoothing);
+			// currentSteeringAngle = Mathf.Lerp(currentSteeringAngle, maxSteeringAngle * horizontalInput, turnSmoothing);
+			// frontWheel.steerAngle = currentSteeringAngle;
 
 			//We set the target laying angle to the + or - input value of our steering 
 			//We invert our input for rotating in the ocrrect axis
@@ -167,7 +172,7 @@ namespace Game.Bicycle
 				return;
 			}
 
-			if (currentSteeringAngle < 0.5f && currentSteeringAngle > -0.5) //We're stright
+			if (currentSteeringAngle < 0.5f && currentSteeringAngle > -0.5) //We're straight
 			{
 				layingammount = Mathf.LerpAngle(layingammount, 0f, leanSmoothing);
 			}
@@ -188,9 +193,7 @@ namespace Game.Bicycle
 
 		public void UpdateHandle()
 		{
-			Quaternion sethandleRot;
-			sethandleRot = frontWheeltransform.rotation;
-			handle.localRotation = Quaternion.Euler(handle.localRotation.eulerAngles.x, currentSteeringAngle,
+			handle.localRotation = Quaternion.Euler(handle.localRotation.eulerAngles.x, frontWheel.steerAngle,
 				handle.localRotation.eulerAngles.z);
 		}
 
@@ -237,30 +240,15 @@ namespace Game.Bicycle
 		}
 
 
-		private void OnTriggerEnter(Collider other)
-		{
-			if (other.gameObject.name == "StraightEnd")
-			{
-				transform.position = GameObject.Find("TurnStart").transform.position;
-				transform.rotation = GameObject.Find("TurnStart").transform.rotation;
-				horizontalInput = -0.03f;
-				rb.velocity = new Vector3(0, 0, 0);
-			}
-			else if (other.gameObject.name == "TurnEnd")
-			{
-				transform.position = GameObject.Find("StraightStart").transform.position;
-				transform.rotation = GameObject.Find("StraightStart").transform.rotation;
-				horizontalInput = 0;
-				rb.velocity = new Vector3(0, 0, 0);
-			}
-			else if (other.gameObject.CompareTag("Dead"))
-			{
-				transform.position = GameObject.Find("StraightStart").transform.position;
-				transform.rotation = GameObject.Find("StraightStart").transform.rotation;
-				horizontalInput = 0;
-				rb.velocity = new Vector3(0, 0, 0);
-			}
-
-		}
+		// private void OnCollisionEnter(Collision other)
+		// {
+		// 	if (other.gameObject.CompareTag("Ground"))
+		// 	{
+		// 		Vector3 targetVelocityNormalized = other.gameObject.transform.rotation.eulerAngles.normalized;
+		// 		horizontalInput = Vector3.Angle(rb.velocity.normalized, targetVelocityNormalized);
+		// 		Debug.Log(horizontalInput + ", " + vereticallInput);
+		// 	}
+		//
+		// }
 	}
 }
