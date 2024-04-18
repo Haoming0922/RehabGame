@@ -12,8 +12,8 @@ namespace Game.Bicycle
 		public SensorManager sensorManager;
 		public TurnController turnController;
 
-		float horizontalInput;
-		float vereticallInput;
+		float horizontalInput = 0f;
+		float vereticallInput = 0f;
 
 		public Transform handle;
 		bool braking;
@@ -58,7 +58,6 @@ namespace Game.Bicycle
 		// Update is called once per frame
 		void FixedUpdate()
 		{
-
 			GetInput();
 			HandleEngine();
 			HandleSteering();
@@ -72,8 +71,16 @@ namespace Game.Bicycle
 		public void GetInput()
 		{
 			// vereticallInput = sensorManager.GetData(SensorPosition.NULL);
-			vereticallInput = 1;
-			horizontalInput = Mathf.Clamp(turnController.horizontalInput / maxSteeringAngle, 0 , 1);
+			if (sensorManager.GetData(SensorPosition.NULL) > 0.1f)
+			{
+				vereticallInput = sensorManager.GetData(SensorPosition.NULL);
+				horizontalInput = Mathf.Clamp(turnController.horizontalInput / maxSteeringAngle, 0 , 1);
+			}
+			else
+			{
+				vereticallInput = 0;
+				horizontalInput = 0;
+			}
 			// horizontalInput = -0.05f;
 			// horizontalInput = Input.GetAxis("Horizontal");
 			// vereticallInput = Input.GetAxis("Vertical");

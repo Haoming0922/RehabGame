@@ -16,7 +16,7 @@ namespace Game.Bicycle
         void FixedUpdate()
         {
             Vector3 targetPosition = player.position + positionOffset;
-            transform.position = Vector3.Lerp(transform.position, targetPosition, 3 * Time.deltaTime);
+            transform.position = Vector3.Lerp(transform.position, targetPosition, 10 * Time.deltaTime);
 
             //Vector3 direction = player.position + lookAtOffset - transform.position;
             //Quaternion toRotation = Quaternion.FromToRotation(transform.rotation.eulerAngles, direction);

@@ -213,7 +213,7 @@ namespace Game.Sensor
             
             if (sensorAddress == sensorData.deviceAddress)
             {
-                value = Calculation.IsCycle(sensorData) ? 1 : 0;
+                value = Calculation.IsCycle(sensorData);
             }
         }
         

@@ -5,25 +5,25 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 0
+  - enabled: 1
     path: Assets/Game/Home/Home.unity
     guid: 33766785e8b35614c87fbd5806f9cd6c
-  - enabled: 0
+  - enabled: 1
     path: Assets/Game/Home/DumbbellPair.unity
     guid: f5a94931031f0e1488df7bd2e7391766
-  - enabled: 0
+  - enabled: 1
     path: Assets/Game/Home/WheelchairPair.unity
     guid: f6efcd2eec578064eaa8469df0ce6953
-  - enabled: 0
+  - enabled: 1
     path: Assets/Game/Home/CyclePair.unity
     guid: fece7aa4f0f27d14894987d623b648f4
-  - enabled: 0
+  - enabled: 1
     path: Assets/Game/JumpJump/Jump.unity
     guid: 2845594b5f269014da17ac2351dd62b9
-  - enabled: 0
+  - enabled: 1
     path: Assets/Game/WheelChair/WheelChair.unity
     guid: 10c9f91ae883a8748912645f174d023f
-  - enabled: 0
+  - enabled: 1
     path: Assets/Game/Bycicle/Cycle.unity
     guid: 27161fc1f22a5754f92d5bf0f8a54ef6
   - enabled: 1

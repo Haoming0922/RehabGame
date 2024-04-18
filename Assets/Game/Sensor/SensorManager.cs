@@ -103,7 +103,7 @@ namespace Game.Sensor
         
         public void SubscribeCycleEvent()
         {
-            Debug.Log("Haoming: Subscribe Success");
+            Debug.Log("Haoming: Cycle Subscribe Success");
             SyncsenseSensorManager.OnSensorDataReceivedEvent += gameInput[SensorPosition.NULL].CycleControlEvent;
         }
         
@@ -114,7 +114,7 @@ namespace Game.Sensor
         
         public float GetData(SensorPosition position)
         {
-            // Debug.Log("Haoming: " + gameInput[position].value);
+            // Debug.Log("Haoming Value: " + gameInput[position].value);
             return gameInput[position].value;
         }
         

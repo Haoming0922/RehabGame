@@ -12759,7 +12759,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gameManager: {fileID: 2120041788}
   player: {fileID: 3433399714308894190}
-  positionOffset: {x: 0, y: 0, z: -1.09}
+  positionOffset: {x: 0, y: 0, z: -1}
   lookAtOffset: {x: 0, y: -0.85, z: 0.58}
 --- !u!114 &770714738
 MonoBehaviour:
@@ -27345,7 +27345,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1638542742
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -33498,7 +33498,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &2120041788
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -33511,16 +33511,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0b5c5907e03aaac428dbe65f84fc24b1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sensorManager: {fileID: 1638542742}
   gameStateManager: {fileID: 2120041791}
-  seed: 99
-  trackPrefs:
-  - {fileID: 0}
-  - {fileID: 0}
-  slopePref: {fileID: 7676730837683055614}
-  firstTrack: {fileID: 0}
-  totalSlopes: 5
-  totalTracks: 150
 --- !u!4 &2120041789
 Transform:
   m_ObjectHideFlags: 0
@@ -35096,7 +35087,7 @@ MonoBehaviour:
   turnController: {fileID: 5622802026080742722}
   handle: {fileID: 5622802025848825613}
   COG: {x: 0, y: -0.1, z: 0}
-  motorforce: 15
+  motorforce: 25
   brakeForce: 55
   currentSteeringAngle: 0
   speedteercontrolTime: 0.0756
@@ -38545,7 +38536,7 @@ Camera:
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
-  m_TargetEye: 0
+  m_TargetEye: 3
   m_HDR: 1
   m_AllowMSAA: 1
   m_AllowDynamicResolution: 0
