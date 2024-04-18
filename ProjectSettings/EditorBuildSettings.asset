@@ -25,7 +25,13 @@ EditorBuildSettings:
     guid: 10c9f91ae883a8748912645f174d023f
   - enabled: 1
     path: Assets/Game/Bycicle/Cycle.unity
-    guid: c81b13122b3615e418880ed6425ffb89
+    guid: 27161fc1f22a5754f92d5bf0f8a54ef6
+  - enabled: 1
+    path: Assets/Game/Home/InworldAvatar.unity
+    guid: 05a6810e687be334abb7726a2de49ddf
+  - enabled: 0
+    path: Assets/Game/test.unity
+    guid: f97458953192d6744ad0dea00da1f80d
   m_configObjects:
     Unity.XR.PICO.LivePreview.Settings: {fileID: 11400000, guid: 015916cee2c22374a9f39c4659a6ebf2, type: 2}
     Unity.XR.PXR.Settings: {fileID: 11400000, guid: c11cda615183cb1459c8e60543bf35bd, type: 2}

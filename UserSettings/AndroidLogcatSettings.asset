@@ -1,38 +1,13 @@
 {
     "m_SelectedDeviceId": "PA7J50PGFA220010W",
-    "m_SelectedPackage": {
+    "m_SelectedProcess": {
         "deviceId": "",
         "name": "",
         "processId": 0,
         "exited": false
     },
     "m_SelectedPriority": 0,
-    "m_KnownPackagesForSerialization": [
-        {
-            "deviceId": "PA7J50PGFA220010W",
-            "name": "com.DefaultCompany.SyncsenseTest",
-            "processId": 6780,
-            "exited": true
-        },
-        {
-            "deviceId": "PA7J50PGFA220010W",
-            "name": "com.DefaultCompany.SyncsenseTest",
-            "processId": 6783,
-            "exited": true
-        },
-        {
-            "deviceId": "PA7J50PGFA220010W",
-            "name": "com.DefaultCompany.SyncsenseTest",
-            "processId": 6784,
-            "exited": true
-        },
-        {
-            "deviceId": "PA7J50PGFA220010W",
-            "name": "com.DefaultCompany.SyncsenseTest",
-            "processId": 32444,
-            "exited": true
-        }
-    ],
+    "m_KnownProcessesForSerialization": [],
     "m_Tags": {
         "m_Entries": [
             {
@@ -65,8 +40,11 @@
             }
         ]
     },
+    "m_ExtraWindowState": {
+        "Type": 0,
+        "Height": 0.0
+    },
     "m_MemoryViewerState": {
-        "MemoryWindowHeight": 300.0,
         "MemoryWindowWidth": 170.0,
         "MemoryTypeEnabled": [
             true,
@@ -81,7 +59,7 @@
             true
         ],
         "MemoryGroup": 2,
-        "Behavior": 0
+        "AutoCapture": true
     },
     "m_FilterOptions": {
         "m_Filter": "",
@@ -99,5 +77,17 @@
         "BitRateK": 20000,
         "DisplayIdEnabled": false,
         "DisplayId": ""
-    }
+    },
+    "m_InputSettings": {
+        "ShiftModifier": false,
+        "SendText": "",
+        "PosixKillSignal": 0,
+        "TargetProcess": {
+            "deviceId": "",
+            "name": "",
+            "processId": 0,
+            "exited": false
+        }
+    },
+    "m_AutoScroll": 0
 }
