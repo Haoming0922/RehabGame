@@ -14,7 +14,7 @@ namespace Game.Wheelchair
 
         void Start()
         {
-
+            transform.Rotate(0, car.rotation.y - transform.rotation.y, 0);
         }
 
         // Update is called once per frame

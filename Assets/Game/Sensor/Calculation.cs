@@ -15,11 +15,11 @@ namespace Game.Sensor
             return moving > 15f;
         }
         
-        public static bool IsCycle(SensorDataReceived data)
+        public static float IsCycle(SensorDataReceived data)
         {
             float moving = Mathf.Abs(data.accX) + Mathf.Abs(data.accY) + Mathf.Abs(data.accZ);
             // Debug.Log("[Haoming] IsMove: " + moving);
-            return moving > 20f;
+            return Mathf.Clamp(moving / 50f, 0 ,1f);
         }
         
         public static bool IsRaise(SensorDataReceived data)
