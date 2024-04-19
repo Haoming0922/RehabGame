@@ -11,6 +11,7 @@ TagManager:
   - Left
   - Straight
   - Right
+  - Start
   layers:
   - Default
   - TransparentFX
