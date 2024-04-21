@@ -1,26 +1,26 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Game.Util;
 
-public class UserConfig
+namespace Game.Util
 {
-    public float maxLeftArmRotationAngle;
-    public float maxRightArmRotationAngle;
-    
-    public UserConfig() {}
-    
-    public void SetArmRotationAngle(SensorPosition position, float data)
+    public class UserConfig
     {
-        switch (position)
+        public Dictionary<MiniGame, float> leftInputPerformance = new Dictionary<MiniGame, float>();
+        public Dictionary<MiniGame, float> rightInputPerformance = new Dictionary<MiniGame, float>();
+
+        // JumpJump : maxArmRotationAngle
+
+        public UserConfig()
         {
-            case SensorPosition.LEFT:
-                maxLeftArmRotationAngle = data;
-                break;
-            case SensorPosition.RIGHT:
-                maxRightArmRotationAngle = data;
-                break;
-            default: break;
+            foreach (MiniGame game in Enum.GetValues(typeof(MiniGame)))
+            {
+                leftInputPerformance.Add(game, 1);
+                rightInputPerformance.Add(game, 1);
+            }
         }
     }
+    
 }

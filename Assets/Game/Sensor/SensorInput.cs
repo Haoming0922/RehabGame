@@ -7,12 +7,14 @@ using Game.Util;
 
 namespace Game.Sensor
 {
-    public class RotationController
+    public class SensorInput
     {
-        public float value = 0;
+        public float value;
+        private float currentValue = 0;
+        private float baseValue = 0;
+        
         private string sensorAddress = "";
         private float currentRotationRaw = 0;
-        private float maxRotationAngle = 0;
         private RotationDirection direction = RotationDirection.NULL;
 
         private Queue<float> dataWindow = new Queue<float>();
@@ -28,7 +30,7 @@ namespace Game.Sensor
         private float CFWeightAcc = 0.13f;
         private float gravity = 9.8f;
         
-        public RotationController(SensorPosition position, SensorPairingData pairingData, UserConfig userConfig)
+        public SensorInput(MiniGame game, SensorPosition position, SensorPairingData pairingData)
         {
             switch (position)
             {
@@ -36,17 +38,13 @@ namespace Game.Sensor
                     direction = pairingData.leftSensorDirection;
                     sensorAddress = pairingData.leftSensorAddress;
                     gravity = pairingData.leftSensorGravity;
-                    if(userConfig != null) maxRotationAngle = userConfig.maxLeftArmRotationAngle;
+                    baseValue = UserManager.Instance.GetPerformance(game,SensorPosition.LEFT);
                     break;
                 case SensorPosition.RIGHT:
                     direction = pairingData.rightSensorDirection;
                     sensorAddress = pairingData.rightSensorAddress;
                     gravity = pairingData.rightSensorGravity;
-                    if(userConfig != null) maxRotationAngle = userConfig.maxRightArmRotationAngle;
-                    break;
-                case SensorPosition.NULL:
-                    sensorAddress = pairingData.cycleSensorAddress;
-                    // Debug.Log("Haoming: RotationController " + sensorAddress);
+                    baseValue = UserManager.Instance.GetPerformance(game,SensorPosition.RIGHT);
                     break;
             }
             
@@ -114,8 +112,8 @@ namespace Game.Sensor
 
         private void DumbbellRotationToGameInput1()
         {
-            averageValue = Mathf.Clamp(averageValue, 0, maxRotationAngle);
-            value = averageValue / maxRotationAngle;
+            averageValue = Mathf.Clamp(averageValue, 0, baseValue);
+            currentValue = averageValue / baseValue;
         }
         
         private void DumbbellRotationToGameInput2(SensorDataReceived sensorData) //JumpJump
@@ -123,12 +121,12 @@ namespace Game.Sensor
             float rotate = sensorData.gyroY * Mathf.Sign(sensorData.accX);
             if (rotate >= -15f) // up
             {
-                averageValue = Mathf.Clamp(averageValue, 0, maxRotationAngle);
-                value = averageValue / maxRotationAngle;
+                averageValue = Mathf.Clamp(averageValue, 0, baseValue);
+                currentValue = averageValue / baseValue;
             }
             else // down
             {
-                value = -1;
+                currentValue = -1;
             }
         }
         
@@ -182,11 +180,11 @@ namespace Game.Sensor
                 case RotationDirection.YPOSITIVE:
                     if (Mathf.Abs(averageValue) > rotationThreshold)
                     {
-                        value = Mathf.Sign(averageValue);
+                        currentValue = Mathf.Sign(averageValue);
                     }
                     else
                     {
-                        value = 0;
+                        currentValue = 0;
                     }
                     break;
                 case RotationDirection.XNEGATIVE:
@@ -194,11 +192,11 @@ namespace Game.Sensor
                 case RotationDirection.ZNEGATIVE:
                     if (Mathf.Abs(averageValue) > rotationThreshold)
                     {
-                        value = -Mathf.Sign(averageValue);
+                        currentValue = -Mathf.Sign(averageValue);
                     }
                     else
                     {
-                        value = 0;
+                        currentValue = 0;
                     }
                     break;
                 default: break;
@@ -213,7 +211,8 @@ namespace Game.Sensor
             
             if (sensorAddress == sensorData.deviceAddress)
             {
-                value = Calculation.IsCycle(sensorData);
+                currentValue = Calculation.AccSum(sensorData);
+                value = Calculation.ToCycleInput(currentValue, baseValue);
             }
         }
         

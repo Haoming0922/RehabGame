@@ -189,7 +189,7 @@ namespace Game.Sensor
             
             SyncsenseSensorManager.OnSensorDataReceivedEvent -= DumbbellPairEvent;
             
-            userconfig.SetArmRotationAngle(currentPairingPosition, rotaionYMax);
+            UserManager.Instance.SetPerformance(MiniGame.Dumbbell, currentPairingPosition, rotaionYMax);
             sensorPairingData.SetSensorAddress(currentPairingPosition, currentSensorAddress);
             sensorPairingData.SetSensorDirection(currentPairingPosition, RotationDirection.NULL);
             sensorPairingData.SetSensorGravity(currentPairingPosition, Mathf.Abs(restGravity[currentSensorAddress]));

@@ -15,6 +15,13 @@ namespace Game.Util
         Cycle
     }
 
+    public enum MiniGame
+    {
+        Wheelchair,
+        Dumbbell,
+        Cycle
+    }
+    
     public enum SensorPosition
     {
         LEFT,

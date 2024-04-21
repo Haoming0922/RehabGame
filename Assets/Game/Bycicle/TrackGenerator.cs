@@ -2,6 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.PlayerLoop;
+using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 
 public class TrackGenerator : MonoBehaviour
@@ -22,8 +24,11 @@ public class TrackGenerator : MonoBehaviour
 
     private Queue<GameObject> tracks = new Queue<GameObject>();
 
-    public GameObject bike;
-
+    public Transform userbike; 
+    public Transform ghostBike;
+    
+    private Transform slowBike;
+    private Transform fastBike;
     
     void Start()
     {
@@ -34,6 +39,20 @@ public class TrackGenerator : MonoBehaviour
         // originalHeights = terrain.terrainData.GetHeights(0, 0, terrain.terrainData.heightmapResolution, terrain.terrainData.heightmapResolution);
         
         StartCoroutine(HandleTrack());
+    }
+
+    void Update()
+    {
+        if (userbike.position.z > ghostBike.position.z)
+        {
+            slowBike = ghostBike;
+            fastBike = userbike;
+        }
+        else
+        {
+            slowBike = userbike;
+            fastBike = ghostBike;
+        }
     }
 
     public IEnumerator HandleTrack()
@@ -94,7 +113,7 @@ public class TrackGenerator : MonoBehaviour
             if (count > 500) count = 0;
             
             GameObject segment = tracks.Peek();
-            if ((segment.transform.position - bike.transform.position).magnitude < 100f)
+            if ((segment.transform.position - slowBike.transform.position).magnitude < 100f)
             {
                 yield return null;
                 continue;

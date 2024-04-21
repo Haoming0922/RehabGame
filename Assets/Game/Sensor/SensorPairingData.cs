@@ -15,7 +15,6 @@ namespace Game.Sensor
     public class SensorPairingData
     {
         public Exercise exercise;
-        public string cycleSensorAddress;
         public string leftSensorAddress;
         public RotationDirection leftSensorDirection;
         public float leftSensorGravity;
@@ -45,9 +44,6 @@ namespace Game.Sensor
                     break;
                 case SensorPosition.RIGHT:
                     rightSensorAddress = id;
-                    break;
-                case SensorPosition.NULL:
-                    cycleSensorAddress = id;
                     break;
                 default: break;
             }

@@ -92,7 +92,12 @@ namespace Game.Bicycle
             
             yield return new WaitForSeconds(.5f);
         }
+
         
+        
+
+        #region Archive
+
         
         // public Transform GetTrack(int idx)
         // {
@@ -198,6 +203,6 @@ namespace Game.Bicycle
         //         gameStateManager.SwitchGameState(GameState.END);
         //     }
         // }
-        
+        #endregion
     }
 }

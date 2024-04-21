@@ -4,11 +4,15 @@ using System.Collections.Generic;
 using Game.Sensor;
 using Game.Util;
 using UnityEngine;
+using Random = System.Random;
 
 namespace Game.Bicycle
 {
 	public class BicycleVehicle : MonoBehaviour
 	{
+		public bool isUser;
+		public TrackGenerator trackGenerator;
+		
 		public SensorManager sensorManager;
 		public TurnController turnController;
 
@@ -48,6 +52,8 @@ namespace Game.Bicycle
 		public bool frontGrounded;
 		public bool rearGrounded;
 
+		private float speedFactor;
+
 		// Start is called before the first frame update
 		void Start()
 		{
@@ -58,7 +64,8 @@ namespace Game.Bicycle
 		// Update is called once per frame
 		void FixedUpdate()
 		{
-			GetInput();
+			if (isUser) GetInput();
+			else AutoDrive();
 			HandleEngine();
 			HandleSteering();
 			UpdateWheels();
@@ -68,12 +75,29 @@ namespace Game.Bicycle
 			EmitTrail();
 		}
 
+		public void AutoDrive()
+		{
+			if (transform.position.z - trackGenerator.userbike.position.z > 100)
+			{
+				vereticallInput = Mathf.Min(0.1f, sensorManager.GetData(SensorPosition.LEFT));	
+			}
+			else if (transform.position.z - trackGenerator.userbike.position.z < -100)
+			{
+				vereticallInput = Mathf.Max(1f,sensorManager.GetData(SensorPosition.LEFT));
+			}
+			else
+			{
+				vereticallInput = UnityEngine.Random.Range(0.8f, 1f);
+			}
+			
+			horizontalInput = Mathf.Clamp(turnController.horizontalInput / maxSteeringAngle, 0 , 1);
+		}
+		
 		public void GetInput()
 		{
-			// vereticallInput = sensorManager.GetData(SensorPosition.NULL);
-			if (sensorManager.GetData(SensorPosition.NULL) > 0.1f)
+			if (sensorManager.GetData(SensorPosition.LEFT) > 0.1f)
 			{
-				vereticallInput = sensorManager.GetData(SensorPosition.NULL);
+				vereticallInput = sensorManager.GetData(SensorPosition.LEFT); // 0 to 2
 				horizontalInput = Mathf.Clamp(turnController.horizontalInput / maxSteeringAngle, 0 , 1);
 			}
 			else
