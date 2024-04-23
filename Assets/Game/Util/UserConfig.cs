@@ -10,6 +10,7 @@ namespace Game.Util
     {
         public Dictionary<MiniGame, float> leftInputPerformance = new Dictionary<MiniGame, float>();
         public Dictionary<MiniGame, float> rightInputPerformance = new Dictionary<MiniGame, float>();
+        public Dictionary<MiniGame, Performance> Performances;
 
         // JumpJump : maxArmRotationAngle
 
@@ -22,5 +23,14 @@ namespace Game.Util
             }
         }
     }
+
+    public class Performance
+    {
+        private float leftInputPerformance;
+        private float rightInputPerformance;
+    }
+    
+    
     
 }
+

@@ -10,6 +10,8 @@ namespace Game.Bicycle
 {
 	public class BicycleVehicle : MonoBehaviour
 	{
+		public BicycleUIUpdater UIUpdater;
+		private float maxSpeed = 30;
 		public bool isUser;
 		public TrackGenerator trackGenerator;
 		
@@ -73,8 +75,16 @@ namespace Game.Bicycle
 			LayOnTurn();
 			DownPresureOnSpeed();
 			EmitTrail();
+			UpdateUI();
 		}
 
+		private void UpdateUI()
+		{
+			if (!isUser) return;
+			float speed = Mathf.Clamp(rb.velocity.magnitude, 0, maxSpeed);
+			UIUpdater.UpdateSpeedUI(speed, speed / maxSpeed);
+		}
+		
 		public void AutoDrive()
 		{
 			if (transform.position.z - trackGenerator.userbike.position.z > 100)
@@ -97,7 +107,7 @@ namespace Game.Bicycle
 		{
 			if (sensorManager.GetData(SensorPosition.LEFT) > 0.1f)
 			{
-				vereticallInput = sensorManager.GetData(SensorPosition.LEFT); // 0 to 2
+				vereticallInput = sensorManager.GetData(SensorPosition.LEFT); // 0 to 1
 				horizontalInput = Mathf.Clamp(turnController.horizontalInput / maxSteeringAngle, 0 , 1);
 			}
 			else

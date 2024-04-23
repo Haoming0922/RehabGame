@@ -108,7 +108,7 @@ namespace Game.Sensor
         public float GetData(SensorPosition position)
         {
             // Debug.Log("Haoming Value: " + gameInput[position].value);
-            return UnityEngine.Random.Range(0, 1f);
+            return UnityEngine.Random.Range(0.7f, 1f); //TODO: change it back!
             return sensorInputs[position].value;
         }
         

@@ -6,24 +6,24 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 0
-    path: Assets/Game/Home/Home.unity
+    path: Assets/Game/Home/HomeArchive.unity
     guid: 33766785e8b35614c87fbd5806f9cd6c
-  - enabled: 0
+  - enabled: 1
     path: Assets/Game/Home/DumbbellPair.unity
     guid: f5a94931031f0e1488df7bd2e7391766
-  - enabled: 0
+  - enabled: 1
     path: Assets/Game/Home/WheelchairPair.unity
     guid: f6efcd2eec578064eaa8469df0ce6953
   - enabled: 1
     path: Assets/Game/Home/CyclePair.unity
     guid: fece7aa4f0f27d14894987d623b648f4
-  - enabled: 0
+  - enabled: 1
     path: Assets/Game/JumpJump/Jump.unity
     guid: 2845594b5f269014da17ac2351dd62b9
-  - enabled: 0
+  - enabled: 1
     path: Assets/Game/WheelChair/WheelChair.unity
     guid: 10c9f91ae883a8748912645f174d023f
-  - enabled: 0
+  - enabled: 1
     path: Assets/Game/Bycicle/Cycle.unity
     guid: 27161fc1f22a5754f92d5bf0f8a54ef6
   - enabled: 0
@@ -32,6 +32,9 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Game/test.unity
     guid: f97458953192d6744ad0dea00da1f80d
+  - enabled: 1
+    path: Assets/Game/Home/Home.unity
+    guid: 087efd7d5ad2d1e4db869118ffc68a5f
   m_configObjects:
     Unity.XR.PICO.LivePreview.Settings: {fileID: 11400000, guid: 015916cee2c22374a9f39c4659a6ebf2, type: 2}
     Unity.XR.PXR.Settings: {fileID: 11400000, guid: c11cda615183cb1459c8e60543bf35bd, type: 2}

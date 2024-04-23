@@ -55,6 +55,11 @@ public class CircularProgressBar : MonoBehaviour {
 		}
 	}
 
+	public void UpdateFillAmount(float amount)
+	{
+		m_FillAmount = amount;
+	}
+
 	private float NormalizeAngle(float angle) {
 		return Mathf.Clamp01(angle / 360f);
 	}

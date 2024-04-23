@@ -113,7 +113,7 @@ public class TrackGenerator : MonoBehaviour
             if (count > 500) count = 0;
             
             GameObject segment = tracks.Peek();
-            if ((segment.transform.position - slowBike.transform.position).magnitude < 100f)
+            if ((segment.transform.position - slowBike.transform.position).magnitude < 300f)
             {
                 yield return null;
                 continue;
