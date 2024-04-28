@@ -12,6 +12,7 @@ namespace Game.JumpJump
 {
     public class GameManager : MonoBehaviour
     {
+        public ReHybAvatarController AvatarController;
         public SensorManager sensorManager;
         public GameStateManager gameStateManager;
 
@@ -48,6 +49,8 @@ namespace Game.JumpJump
             gameStateManager.SwitchGameState(GameState.PREPARE);
             
             jumpAnimation = GetComponent<JumpAnimation>();
+
+            StartCoroutine(Speak());
         }
 
         private void OnDestroy()
@@ -66,6 +69,15 @@ namespace Game.JumpJump
             WinCheck();
         }
         
+        private IEnumerator Speak()
+        {
+            yield return new WaitForSeconds(5f);
+            while (true)
+            {
+                AvatarController.UserSpeak("middle_game");
+                yield return new WaitForSeconds(60f);
+            }   
+        }
         
         public void EnableCameraFollow()
         {

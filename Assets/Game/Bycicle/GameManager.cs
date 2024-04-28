@@ -12,7 +12,28 @@ namespace Game.Bicycle
 {
     public class GameManager : MonoBehaviour
     {
-        public GameStateManager gameStateManager;
+                
+        public SensorManager sensorManager;
+        
+        private float timeCount = 0;
+        private float timePeriod = 0;
+
+        private float avgSpeed;
+        private float performance;
+        private int coins;
+
+        
+        public GameObject gamePlayUI;
+        public GameObject gameEndUI;
+        
+        public Action gameEndEvent;
+
+        public bool playerWin;
+        public bool ghostWin;
+        public GameState state;
+        public ReHybAvatarController AvatarController;
+
+        public BicycleUIUpdater UIUpdater;
         
         // [Header("level Generator")] 
         // public int seed;
@@ -28,71 +49,74 @@ namespace Game.Bicycle
         //
         // public float MaxDistance { get; private set; }
 
+
         
         void Start()
         {
-            gameStateManager.PrepareEvent += DisableCameraFollow;
-            gameStateManager.PrepareEvent += DisablePlayerControl;
-
-            gameStateManager.PlayEvent += EnablePlayerControl;
-            gameStateManager.PlayEvent += EnableCameraFollow;
-
-            gameStateManager.EndEvent += DisablePlayerControl;
-
-            StartGame();
+            StartCoroutine(MoveToStart());
+            gameEndEvent += OnGameEnd;
         }
 
         private void OnDestroy()
         {
-            gameStateManager.PrepareEvent += DisableCameraFollow;
-            gameStateManager.PrepareEvent -= DisablePlayerControl;
-            
-            gameStateManager.PlayEvent -= EnablePlayerControl;
-            gameStateManager.PlayEvent -= EnableCameraFollow;
-            
-            gameStateManager.EndEvent -= DisablePlayerControl;
+            gameEndEvent -= OnGameEnd;
+        }
+
+        private void Update()
+        {
+            if (state == GameState.PLAY)
+            {
+                timePeriod += Time.deltaTime;
+                timeCount += Time.deltaTime;
+            }
+
+            if (timePeriod > 30 && state == GameState.PLAY)
+            {
+                timePeriod = 0;
+                AvatarController.UserSpeak("middle_game");
+            }
+        }
+
+
+        public void UpdatePlayerData(float speed, float input)
+        {
+            avgSpeed = (avgSpeed + speed) / 2;
+            performance = (performance + input) / 2; // TODO: Performance = current AvgInput / past AvgInput
         }
         
-        public void EnableCameraFollow()
+        private void OnGameEnd()
         {
-            GameObject.Find("CameraOffset").GetComponent<CameraFollow>().enabled = true;
-        }
-
-        public void DisableCameraFollow()
-        {
-            GameObject.Find("CameraOffset").GetComponent<CameraFollow>().enabled = false;
-        }
-
-        
-        public void EnablePlayerControl()
-        {
-            GameObject.Find("Bike").GetComponent<BicycleVehicle>().enabled = true;
-        }
-
-        public void DisablePlayerControl()
-        {
-            GameObject.Find("Bike").GetComponent<BicycleVehicle>().enabled = false;
-        }
-
-        
-        
-        private void StartGame()
-        {
-            StartCoroutine(StartGame_());
+            state = GameState.END;
+            StartCoroutine(UIUpdater.ShowGameEndUI(timeCount, avgSpeed, performance, coins));
+            if (playerWin)
+            {
+                AvatarController.UserSpeak("game_win");
+            }
+            else
+            {
+                AvatarController.UserSpeak("game_lose");
+            }
         }
         
-        private IEnumerator StartGame_()
+        private IEnumerator MoveToStart()
         {
-
-            gameStateManager.SwitchGameState(GameState.PREPARE);
+            gameEndUI.SetActive(false);
+            state = GameState.PREPARE;
             
-            yield return new WaitForSeconds(3f);
+            AvatarController.UserSpeak("ask_move_sensor");
+            yield return new WaitForSeconds(5f);
+            UIUpdater.ShowMoveToStartUI();
+            yield return new WaitForSeconds(1f);
             
-            gameStateManager.SwitchGameState(GameState.PLAY);
+            // TODO
+            // while (!(sensorManager.IsMove(SensorPosition.LEFT)))
+            // {
+            //     yield return null;
+            // }
             
-            yield return new WaitForSeconds(.5f);
+            yield return StartCoroutine(UIUpdater.ShowGameStartUI());
+            state = GameState.PLAY;
         }
-
         
         
 

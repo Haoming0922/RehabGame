@@ -10,6 +10,7 @@ namespace Game.Bicycle
 {
 	public class BicycleVehicle : MonoBehaviour
 	{
+		public GameManager gameManager;
 		public BicycleUIUpdater UIUpdater;
 		private float maxSpeed = 30;
 		public bool isUser;
@@ -66,26 +67,42 @@ namespace Game.Bicycle
 		// Update is called once per frame
 		void FixedUpdate()
 		{
-			if (isUser) GetInput();
-			else AutoDrive();
-			HandleEngine();
-			HandleSteering();
-			UpdateWheels();
-			UpdateHandle();
-			LayOnTurn();
-			DownPresureOnSpeed();
-			EmitTrail();
-			UpdateUI();
+			
+			if (gameManager.state == GameState.END)
+			{
+				rb.velocity = Vector3.zero;
+					// Vector3.Lerp(rb.velocity, Vector3.zero, Time.deltaTime);
+				rb.isKinematic = true;
+			}
+			
+			if (gameManager.state == GameState.PLAY)
+			{
+				if (isUser) GetInput();
+				else AutoDrive();
+				
+				HandleEngine();
+				HandleSteering();
+				UpdateWheels();
+				UpdateHandle();
+				LayOnTurn();
+				DownPresureOnSpeed();
+				EmitTrail();
+				UpdateUI();
+				gameManager.UpdatePlayerData(rb.velocity.magnitude, vereticallInput);
+			}
+
 		}
 
 		private void UpdateUI()
 		{
-			if (!isUser) return;
-			float speed = Mathf.Clamp(rb.velocity.magnitude, 0, maxSpeed);
+			// if (!isUser) return;
+			float speed = Mathf.Clamp(rb.velocity.magnitude, 0, 50);
 			UIUpdater.UpdateSpeedUI(speed, speed / maxSpeed);
+			UIUpdater.UpdateForceUI(vereticallInput);
 		}
 		
-		public void AutoDrive()
+		
+		private void AutoDrive()
 		{
 			if (transform.position.z - trackGenerator.userbike.position.z > 100)
 			{
@@ -93,11 +110,11 @@ namespace Game.Bicycle
 			}
 			else if (transform.position.z - trackGenerator.userbike.position.z < -100)
 			{
-				vereticallInput = Mathf.Max(1f,sensorManager.GetData(SensorPosition.LEFT));
+				vereticallInput = Mathf.Max(5f,sensorManager.GetData(SensorPosition.LEFT));
 			}
 			else
 			{
-				vereticallInput = UnityEngine.Random.Range(0.8f, 1f);
+				vereticallInput = UnityEngine.Random.Range(0.1f, 5f);
 			}
 			
 			horizontalInput = Mathf.Clamp(turnController.horizontalInput / maxSteeringAngle, 0 , 1);
@@ -107,7 +124,7 @@ namespace Game.Bicycle
 		{
 			if (sensorManager.GetData(SensorPosition.LEFT) > 0.1f)
 			{
-				vereticallInput = sensorManager.GetData(SensorPosition.LEFT); // 0 to 1
+				vereticallInput = sensorManager.GetData(SensorPosition.LEFT); // 0 to 5
 				horizontalInput = Mathf.Clamp(turnController.horizontalInput / maxSteeringAngle, 0 , 1);
 			}
 			else

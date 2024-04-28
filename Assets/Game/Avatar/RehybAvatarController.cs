@@ -17,17 +17,19 @@ public class ReHybAvatarController : MonoBehaviour
     }
 
     [ContextMenu("UserSpeak")]
-    public void UserSpeak()
+    public void UserSpeak(string goal)
     {
-        m_CurrentCharacter.SendTrigger("greeting",true);
-        m_CurrentCharacter.SendTrigger("greeting",true);
+        m_CurrentCharacter.EnableGoal(goal);
+        m_CurrentCharacter.SendTrigger(goal,true);
+        m_CurrentCharacter.SendTrigger(goal,true);
     }
     
     [ContextMenu("TherapistSpeak")]
-    public void TherapistSpeak()
+    public void TherapistSpeak(string goal)
     {
-        m_CurrentCharacter.SendTrigger("greeting",true);
-        m_CurrentCharacter.SendTrigger("greeting",true);
+        m_CurrentCharacter.EnableGoal(goal);
+        m_CurrentCharacter.SendTrigger(goal,true);
+        m_CurrentCharacter.SendTrigger(goal,true);
     }
     
 }

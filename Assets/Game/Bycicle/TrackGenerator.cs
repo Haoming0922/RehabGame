@@ -9,7 +9,9 @@ using Random = UnityEngine.Random;
 public class TrackGenerator : MonoBehaviour
 {
     public GameObject trackSegmentPrefab;
-    public int numberOfSegments = 200;
+    public GameObject trackEndPrefab;
+    public int totalSegments = 200;
+    private int numberOfSegments = 50;
 
     private float perlinNoiseScale = 0.1f;
     private float directionChangeIntensity = 2f;
@@ -29,12 +31,16 @@ public class TrackGenerator : MonoBehaviour
     
     private Transform slowBike;
     private Transform fastBike;
+    private int totalSegmentsCount;
+
+    public GameObject finishMark;
     
     void Start()
     {
+        totalSegmentsCount = numberOfSegments;
         lastDirection = trackSegmentPrefab.transform.forward;
         lastPosition = trackSegmentPrefab.transform.position;
-        segmentLength = trackSegmentPrefab.transform.localScale.z * 4.5f;
+        segmentLength = trackSegmentPrefab.transform.localScale.z * 4f;
         // terrain.terrainData.size = new Vector3(1000, terrain.terrainData.size.y, 1000);
         // originalHeights = terrain.terrainData.GetHeights(0, 0, terrain.terrainData.heightmapResolution, terrain.terrainData.heightmapResolution);
         
@@ -63,7 +69,6 @@ public class TrackGenerator : MonoBehaviour
     
     public IEnumerator GenerateTrack()
     {
-                
         Vector3 currentPosition = lastPosition;
         Vector3 currentDirection = lastDirection;
         
@@ -95,7 +100,6 @@ public class TrackGenerator : MonoBehaviour
         }
         
         lastPosition = currentPosition;
-        
     }
 
     public IEnumerator RegenerateTracks()
@@ -140,6 +144,15 @@ public class TrackGenerator : MonoBehaviour
             currentPosition = nextPosition;
             lastDirection = currentDirection;
             count++;
+            totalSegmentsCount ++;
+
+            if (totalSegmentsCount > totalSegments) // finish
+            {
+                trackEndPrefab.transform.position = segment.transform.position + segment.transform.forward * segmentLength;
+                trackEndPrefab.transform.rotation = segment.transform.rotation;
+                trackEndPrefab.tag = "Finish";
+                break;
+            }
             
             yield return null;
         }

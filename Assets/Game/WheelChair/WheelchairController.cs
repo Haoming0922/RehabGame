@@ -12,7 +12,9 @@ using Unity.VisualScripting;
 public class WheelchairController : MonoBehaviour
 {
     public SensorManager sensorManager;
-        
+
+    public ReHybAvatarController AvatarController;
+    
     public GameObject leftWheel;
     public GameObject rightWheel;
     public Rigidbody wheelchairRigidbody; // Reference to the wheelchair's Rigidbody
@@ -46,6 +48,7 @@ public class WheelchairController : MonoBehaviour
         leftAction.Enable();
         rightAction.Enable();
         joyStickAction.Enable();
+        StartCoroutine(Speak());
     }
 
     private void OnDisable()
@@ -84,6 +87,17 @@ public class WheelchairController : MonoBehaviour
         ApplyMovement(leftInput, rightInput);
     }
 
+    private IEnumerator Speak()
+    {
+        yield return new WaitForSeconds(5f);
+        while (true)
+        {
+            AvatarController.UserSpeak("middle_game");
+            yield return new WaitForSeconds(60f);
+        }   
+    }
+    
+    
     // private void OnLeftInput(InputValue value)
     // {
     //     leftInput = value.Get<float>();

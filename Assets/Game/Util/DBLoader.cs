@@ -8,8 +8,6 @@ namespace Game.Util
     {
         public void LoadData()
         {
-            // TODO: Connect to DB
-            UserManager.Instance.userConfig.leftInputPerformance[MiniGame.Cycle] = 20f;
         }
     }
 

@@ -66,7 +66,7 @@ public class UnityMainThreadDispatcher : MonoBehaviour {
 	public Task EnqueueAsync(Action action)
 	{
 		var tcs = new TaskCompletionSource<bool>();
-
+	
 		void WrappedAction() {
 			try 
 			{
@@ -77,7 +77,7 @@ public class UnityMainThreadDispatcher : MonoBehaviour {
 				tcs.TrySetException(ex);
 			}
 		}
-
+	
 		Enqueue(ActionWrapper(WrappedAction));
 		return tcs.Task;
 	}

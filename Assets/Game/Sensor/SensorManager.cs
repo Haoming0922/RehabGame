@@ -35,6 +35,7 @@ namespace Game.Sensor
                     break;
                 case Exercise.Cycle:
                     sensorInputs.Add(SensorPosition.LEFT, new SensorInput(game, SensorPosition.LEFT, _sensorPairingData));
+                    Debug.Log("Haoming: " + _sensorPairingData.leftSensorAddress);
                     SubscribeCycleEvent();
                     break;
                 default:
@@ -108,8 +109,13 @@ namespace Game.Sensor
         public float GetData(SensorPosition position)
         {
             // Debug.Log("Haoming Value: " + gameInput[position].value);
-            return UnityEngine.Random.Range(0.7f, 1f); //TODO: change it back!
+            // return UnityEngine.Random.Range(0.7f, 1f); //TODO: change it back!
             return sensorInputs[position].value;
+        }
+        
+        public bool IsMove(SensorPosition position)
+        {
+            return sensorInputs[position].value > 0.2f;
         }
         
         #region Connect to Sensors

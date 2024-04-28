@@ -183,13 +183,13 @@ namespace Game.Sensor
             SyncsenseSensorManager.OnSensorDataReceivedEvent += DumbbellPairEvent;
             
             guide.text = "Please only raise " + currentPairingPosition.ToString().ToLower() + " side";
-            yield return new WaitForSeconds(20f);
+            yield return new WaitForSeconds(10f);
             guide.text = "Max Angle: " + (int) rotaionYMax;
             yield return new WaitForSeconds(3f);
             
             SyncsenseSensorManager.OnSensorDataReceivedEvent -= DumbbellPairEvent;
             
-            UserManager.Instance.SetPerformance(MiniGame.Dumbbell, currentPairingPosition, rotaionYMax);
+            // UserManager.Instance.SetPerformance(MiniGame.Dumbbell, currentPairingPosition, rotaionYMax);
             sensorPairingData.SetSensorAddress(currentPairingPosition, currentSensorAddress);
             sensorPairingData.SetSensorDirection(currentPairingPosition, RotationDirection.NULL);
             sensorPairingData.SetSensorGravity(currentPairingPosition, Mathf.Abs(restGravity[currentSensorAddress]));
