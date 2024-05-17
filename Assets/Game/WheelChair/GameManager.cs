@@ -7,31 +7,71 @@ using TMPro;
 using UnityEngine;
 using Random = UnityEngine.Random;
 using Game.Util;
+using RehabDB;
+using UnityEngine.SceneManagement;
+using UnityEngine.InputSystem;
 
 namespace Game.Wheelchair
 {
     public class GameManager : MonoBehaviour
     {
-        public GameState state;
-        public ReHybAvatarController AvatarController;
         public SensorManager sensorManager;
+        
+        public AvatarLoader avatarLoader;
         
         private float timeCount = 0;
         private float timePeriod = 0;
 
-        public GameObject gamePlayUI;
+        private float avgSpeed;
+        private float leftPerformance;
+        private float rightPerformance;
+        private int coins;
+        
         public GameObject gameEndUI;
         
         public Action gameEndEvent;
 
         public bool playerWin;
+        public bool ghostWin;
+        public GameState state;
+
+        public WheelchairUIUpdater UIUpdater;
+        
+        public bool fiveMinReminded = false;
+        public bool finishReminded = false;
+
+        public Transform player;
+        public Transform ghost;
+
+        public InputActionReference Reload;
+        public InputActionReference PauseGame;
+        public InputActionReference Exit;
+        private bool isPause;
         
         void Start()
         {
+            if (DBManager.Instance.currentPatient != null)
+            {
+                avatarLoader.LoadAvatar(DBManager.Instance.currentPatient.UnityAvatar);
+            }
             StartCoroutine(MoveToStart());
             gameEndEvent += OnGameEnd;
         }
 
+        private void OnEnable()
+        {
+            PauseGame.action.Enable();
+            Reload.action.Enable();
+            Exit.action.Enable();
+        }
+        
+        private void OnDisable()
+        {
+            PauseGame.action.Disable();
+            Reload.action.Disable();
+            Exit.action.Disable();
+        }
+        
         private void OnDestroy()
         {
             gameEndEvent -= OnGameEnd;
@@ -39,56 +79,129 @@ namespace Game.Wheelchair
 
         private void Update()
         {
+            TimeCounter();
+            AvatarSpeak();
+            ControllerInput();
+        }
+        
+        private void ControllerInput()
+        {
+            if (Exit.action.IsPressed()) SceneManager.LoadScene("Home");
+            if (Reload.action.IsPressed()) SceneManager.LoadScene("Wheelchair1D");
+            if (PauseGame.action.IsPressed())
+            {
+                if (isPause)
+                {
+                    isPause = false;
+                    Time.timeScale = 1;
+                }
+                else
+                {
+                    isPause = true;
+                    Time.timeScale = 0;
+                }
+            }
+        }
+        
+        private void TimeCounter()
+        {
             if (state == GameState.PLAY)
             {
                 timePeriod += Time.deltaTime;
                 timeCount += Time.deltaTime;
             }
-
-            if (timePeriod > 30 && state == GameState.PLAY)
+        }
+        
+        private void AvatarSpeak()
+        {
+            if (timeCount > 180 && fiveMinReminded)
+            {
+                fiveMinReminded = true;
+                avatarLoader.Speak("three_min_reminder", new Dictionary<string, string>(){ {"player", DBManager.Instance.currentPatient.Name.Split(" ")[0]} });
+            }
+            else if (timeCount > 300 && finishReminded)
+            {
+                finishReminded = true;
+                avatarLoader.Speak("end_game_reminder", new Dictionary<string, string>(){ {"player", DBManager.Instance.currentPatient.Name.Split(" ")[0]} });
+            }
+            else if (timePeriod > 60)
             {
                 timePeriod = 0;
-                AvatarController.UserSpeak("middle_game");
+                if (player.position.z > ghost.position.z)
+                {
+                    avatarLoader.Speak("competition_status_faster", new Dictionary<string, string>(){ {"player", DBManager.Instance.currentPatient.Name.Split(" ")[0]} });
+                }
+                else
+                {
+                    avatarLoader.Speak("competition_status_slower", new Dictionary<string, string>(){ {"player", DBManager.Instance.currentPatient.Name.Split(" ")[0]} });
+                }
+            }
+            else if (timeCount > 60) 
+            {
+                avatarLoader.Speak("come_on", new Dictionary<string, string>(){ {"player", DBManager.Instance.currentPatient.Name.Split(" ")[0]} });
             }
         }
-
-
+        
+        public void UpdatePlayerData(float speed, float leftInput, float rightInput)
+        {
+            avgSpeed = avgSpeed ==  0 ? speed : (avgSpeed + speed) / 2;
+            if(leftInput > 0.2f) leftPerformance = leftPerformance == 0 ? leftPerformance : (leftPerformance + leftInput) / 2; 
+            if(rightInput > 0.2f) rightPerformance = rightPerformance == 0 ? rightPerformance : (rightPerformance + rightInput) / 2; 
+        }
+        
         private void OnGameEnd()
         {
             state = GameState.END;
-            gamePlayUI.SetActive(false);
-            gameEndUI.SetActive(true);
-            // TODO: evaluation page
+            StartCoroutine(UIUpdater.ShowGameEndUI(timeCount, avgSpeed, (rightPerformance  + leftPerformance) / 2 , coins));
             if (playerWin)
             {
-                AvatarController.UserSpeak("game_win");
+                avatarLoader.Speak("finish_round_win_competition", new Dictionary<string, string>(){ {"player", DBManager.Instance.currentPatient.Name.Split(" ")[0]} });
             }
             else
             {
-                AvatarController.UserSpeak("game_lose");
+                avatarLoader.Speak("finish_round_lose_competition", new Dictionary<string, string>(){ {"player", DBManager.Instance.currentPatient.Name.Split(" ")[0]} });
             }
+            // DBManager.Instance.currentPatient.UpdateGameTask("Wheelchair", timeCount);
+            DBManager.Instance.currentPatient.UpdateGamePerformance("Wheelchair", leftPerformance, rightPerformance);
+            // DBManager.Instance.SavePerformance("Wheelchair", leftPerformance, rightPerformance);
         }
         
         private IEnumerator MoveToStart()
         {
-            gamePlayUI.SetActive(false);
             gameEndUI.SetActive(false);
             state = GameState.PREPARE;
             
-            AvatarController.UserSpeak("ask_move_sensor");
-            yield return new WaitForSeconds(5f);
+            yield return new WaitForSeconds(3f);
+            avatarLoader.Speak("intro_wheelchair", new Dictionary<string, string>(){ {"player", DBManager.Instance.currentPatient.Name.Split(" ")[0]} });
+            yield return new WaitForSeconds(10f);
+            UIUpdater.ShowMoveToStartUI();
+            yield return new WaitForSeconds(3f);
             
-            while (!(sensorManager.IsMove(SensorPosition.LEFT) && sensorManager.IsMove(SensorPosition.RIGHT)))
+            // TODO
+            float move = sensorManager.GetData(SensorPosition.LEFT);
+            while (move < 20)
             {
+                move += Mathf.Max(sensorManager.GetData(SensorPosition.LEFT), sensorManager.GetData(SensorPosition.RIGHT));
                 yield return null;
             }
             
-            AvatarController.UserSpeak("start_game");
-            yield return new WaitForSeconds(5f);
-            
+            yield return StartCoroutine(UIUpdater.ShowGameStartUI());
             state = GameState.PLAY;
-            gamePlayUI.SetActive(true);
         }
+
+
+        private void Pause()
+        {
+            isPause = true;
+            Time.timeScale = 0;
+        }
+
+        private void Resume()
+        {
+            isPause = false;
+            Time.timeScale = 1;
+        }
+
         
     }
 }

@@ -6,6 +6,7 @@ using UnityEngine;
 using Unity.XR.PXR;
 using UnityEngine.SceneManagement;
 using Game.Util;
+using RehabDB;
 
 namespace Game.Sensor
 {
@@ -16,26 +17,26 @@ namespace Game.Sensor
         private SensorPairingData _sensorPairingData;
         private IDictionary<SensorPosition, SensorInput> sensorInputs = new Dictionary<SensorPosition, SensorInput>();
         private int sensorCount = 0;
+        public LocalPatientData localPatient;
         
         private void Awake()
         {
             LoadSensorData();
-
+            LoadPatient();
             switch (exercise)
             {
                 case Exercise.Wheelchair:
-                    sensorInputs.Add(SensorPosition.LEFT, new SensorInput(game, SensorPosition.LEFT, _sensorPairingData));
-                    sensorInputs.Add(SensorPosition.RIGHT, new SensorInput(game, SensorPosition.RIGHT, _sensorPairingData));
+                    sensorInputs.Add(SensorPosition.LEFT, new SensorInput(game, SensorPosition.LEFT, _sensorPairingData, localPatient));
+                    sensorInputs.Add(SensorPosition.RIGHT, new SensorInput(game, SensorPosition.RIGHT, _sensorPairingData, localPatient));
                     SubscribeWheelchairEvent();
                     break;
                 case Exercise.Dumbbell:
-                    sensorInputs.Add(SensorPosition.LEFT, new SensorInput(game, SensorPosition.LEFT, _sensorPairingData));
-                    sensorInputs.Add(SensorPosition.RIGHT, new SensorInput(game, SensorPosition.RIGHT, _sensorPairingData));
-                    SubscribeDumbbellEvent2();
+                    sensorInputs.Add(SensorPosition.LEFT, new SensorInput(game, SensorPosition.LEFT, _sensorPairingData, localPatient));
+                    sensorInputs.Add(SensorPosition.RIGHT, new SensorInput(game, SensorPosition.RIGHT, _sensorPairingData, localPatient));
+                    SubscribeDumbbellEvent();
                     break;
                 case Exercise.Cycle:
-                    sensorInputs.Add(SensorPosition.LEFT, new SensorInput(game, SensorPosition.LEFT, _sensorPairingData));
-                    Debug.Log("Haoming: " + _sensorPairingData.leftSensorAddress);
+                    sensorInputs.Add(SensorPosition.LEFT, new SensorInput(game, SensorPosition.LEFT, _sensorPairingData, localPatient));
                     SubscribeCycleEvent();
                     break;
                 default:
@@ -44,7 +45,16 @@ namespace Game.Sensor
             
             ConnectToSensors();
         }
-        
+
+        private void LoadPatient()
+        {
+            localPatient = new LocalPatientData();
+            if (DBManager.Instance.currentPatient != null)
+            {
+                LocalPatientData p = (LocalPatientData) DataSaver.LoadData(DBManager.Instance.currentPatient.Name + ".userInfo", typeof(LocalPatientData));
+                if (p != null) localPatient = p;
+            }
+        }
 
         private void LoadSensorData()
         {
@@ -83,6 +93,18 @@ namespace Game.Sensor
             SyncsenseSensorManager.OnSensorDataReceivedEvent -= sensorInputs[SensorPosition.RIGHT].DumbbellControlEvent1;
         }
         
+        public void SubscribeDumbbellEvent()
+        {
+            SyncsenseSensorManager.OnSensorDataReceivedEvent += sensorInputs[SensorPosition.LEFT].DumbbellControlEvent;
+            SyncsenseSensorManager.OnSensorDataReceivedEvent += sensorInputs[SensorPosition.RIGHT].DumbbellControlEvent;
+        }
+
+        public void UnSubscribeDumbbellEvent()
+        {
+            SyncsenseSensorManager.OnSensorDataReceivedEvent -= sensorInputs[SensorPosition.LEFT].DumbbellControlEvent;
+            SyncsenseSensorManager.OnSensorDataReceivedEvent -= sensorInputs[SensorPosition.RIGHT].DumbbellControlEvent;
+        }
+        
         public void SubscribeDumbbellEvent2()
         {
             SyncsenseSensorManager.OnSensorDataReceivedEvent += sensorInputs[SensorPosition.LEFT].DumbbellControlEvent2;
@@ -112,10 +134,28 @@ namespace Game.Sensor
             // return UnityEngine.Random.Range(0.7f, 1f); //TODO: change it back!
             return sensorInputs[position].value;
         }
+
+        public void ResetData()
+        {
+            foreach (var input in sensorInputs)
+            {
+                input.Value.ResetValue();
+            }
+        }
+        
+        public float GetBaseline(SensorPosition position)
+        {
+            return sensorInputs[position].baseValue;
+        }
         
         public bool IsMove(SensorPosition position)
         {
-            return sensorInputs[position].value > 0.2f;
+            return sensorInputs[position].value > 0.4f;
+        }
+        
+        public bool IsDown(SensorPosition position)
+        {
+            return sensorInputs[position].IsDown;
         }
         
         #region Connect to Sensors
@@ -161,6 +201,7 @@ namespace Game.Sensor
             UnSubscribeWheelchairEvent();
             UnSubscribeDumbbellEvent1();
             UnSubscribeDumbbellEvent2();
+            UnSubscribeDumbbellEvent();
             UnSubscribeCycleEvent();
         }
 

@@ -19,11 +19,25 @@ namespace Game.Sensor
         {
             return Mathf.Abs(data.accX) + Mathf.Abs(data.accY) + Mathf.Abs(data.accZ);
         }
-        
-        public static float ToCycleInput(float currentAcc, float baseAcc)
+
+        public static float AccMotion(SensorDataReceived data)
         {
-            if (baseAcc < 15f) return 0;
-            return Mathf.Clamp(currentAcc / baseAcc, 0 ,5f);
+            float acc = Mathf.Abs(data.accX) + Mathf.Abs(data.accY) + Mathf.Abs(data.accZ);
+            float gyro = Mathf.Abs(data.gyroX) + Mathf.Abs(data.gyroY) + Mathf.Abs(data.gyroZ);
+            return (acc + gyro) / 10f;
+        }
+        
+        public static float ToWheelchairRacingInput(float currentAcc, float baseAcc)
+        {
+            if (currentAcc < 15f) return 0;
+            if(currentAcc > 30f) return Mathf.Clamp(currentAcc / baseAcc, 0.8f ,2f);
+            else return Mathf.Clamp(currentAcc / baseAcc, 0.3f ,2f);
+        }
+        
+        public static float ToCycleRacingInput(float currentAcc, float baseAcc)
+        {
+            if (currentAcc < 15f) return 0;
+            return Mathf.Clamp(currentAcc / (baseAcc * 0.8f), 0f , 5f);
         }
         
         public static bool IsRaise(SensorDataReceived data)
@@ -36,7 +50,7 @@ namespace Game.Sensor
         public static bool IsDownX(SensorDataReceived data)
         {
             // Debug.Log("[Haoming] IsDownX: " + Mathf.Abs(data.accX));
-            return Mathf.Abs(data.accX) > 8f;
+            return Mathf.Abs(data.accX) > 9f;
         }
 
 

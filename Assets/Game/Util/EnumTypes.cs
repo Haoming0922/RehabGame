@@ -14,13 +14,7 @@ namespace Game.Util
         Dumbbell,
         Cycle
     }
-
-    public enum MiniGame
-    {
-        Wheelchair,
-        Dumbbell,
-        Cycle
-    }
+    
     
     public enum SensorPosition
     {

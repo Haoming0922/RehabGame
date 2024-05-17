@@ -1,7 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
+using Game.Util;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace Game.JumpJump
 {
@@ -9,22 +11,40 @@ namespace Game.JumpJump
     {
         public GameManager gameManager;
         public Transform player;
-        public Vector3 positionOffset;
-        public Vector3 lookAtOffset;
-
+        public Camera playerHead;
+        
         // Update is called once per frame
         void FixedUpdate()
         {
-            Vector3 targetPosition = player.position + positionOffset;
-            transform.position = Vector3.Lerp(transform.position, targetPosition, Time.deltaTime);
+            Follow();
+            // if (Reload.action.IsPressed()) ResetPosition();
+            // else
+            // {
+            //     Follow();
+            // }
+        }
 
-            //Vector3 direction = player.position + lookAtOffset - transform.position;
-            //Quaternion toRotation = Quaternion.FromToRotation(transform.rotation.eulerAngles, direction);
-            //transform.rotation = Quaternion.Lerp(transform.rotation, toRotation, 2 * Time.deltaTime);
-
-            Vector3 targetLookAt = Vector3.Lerp(transform.position + transform.forward, player.position + lookAtOffset, 0.5f * Time.deltaTime);
+        void Follow()
+        {
+            Vector3 targetPosition = player.position - 5.5f * player.forward + 3f * player.up;
+            transform.position = Vector3.Lerp(transform.position, targetPosition, 1.3f * Time.deltaTime);
+            
+            // transform.rotation = Quaternion.Lerp(transform.rotation,  player.rotation, 2 * Time.deltaTime);
+            
+            Vector3 targetLookAt = Vector3.Lerp(transform.position + transform.forward, new Vector3(gameManager.GetTargetPosition().x, transform.position.y , gameManager.GetTargetPosition().z),  .1f * Time.deltaTime);
+            // Vector3 targetLookAt = Vector3.Lerp(transform.position + transform.forward, player.position + lookAtOffset,  Time.deltaTime);
             transform.LookAt(targetLookAt);
         }
+        
+        void ResetPosition()
+        {
+            float rotationY = player.rotation.eulerAngles.y - playerHead.transform.rotation.eulerAngles.y;
+            transform.Rotate(0, rotationY, 0);
+            
+            Vector3 distanceDiff = player.position - playerHead.transform.position;
+            transform.position += distanceDiff;
+        }
+        
     }
 }
 

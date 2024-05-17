@@ -4,30 +4,32 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 using Game.Util;
+using RehabDB;
 
 namespace Game.Sensor
 {
     public class SensorInput
     {
         public float value;
-        private float baseValue = 0;
+        public float baseValue = 0;
         
         private string sensorAddress = "";
         private float currentRotationRaw = 0;
         private RotationDirection direction = RotationDirection.NULL;
 
         private Queue<float> dataWindow = new Queue<float>();
-        private int lowPassWindowSize = 8;
+        private int lowPassWindowSize = 6;
         public float averageValue { get; private set; }
         public bool IsMove { get; private set; }
+        public bool IsDown { get; private set; }
 
-        private float angleStart = 5f;
-        private float angleEnd = 5f;
+        private float angleStart = 1f;
+        private float angleEnd = 1f;
 
-        private float CFWeightAcc = 0.13f;
+        private float CFWeightAcc = 0.14f;
         private float gravity = 9.8f;
         
-        public SensorInput(MiniGame game, SensorPosition position, SensorPairingData pairingData)
+        public SensorInput(MiniGame game, SensorPosition position, SensorPairingData pairingData, LocalPatientData localPatient)
         {
             switch (position)
             {
@@ -35,26 +37,59 @@ namespace Game.Sensor
                     direction = pairingData.leftSensorDirection;
                     sensorAddress = pairingData.leftSensorAddress;
                     gravity = pairingData.leftSensorGravity;
-                    Debug.Log("Haoming: " + pairingData.leftSensorAddress);
-                    SetDefaultBaseValue(game);
+                    // Debug.Log("Haoming: " + pairingData.leftSensorAddress);
+                    LoadDefaultBaseValue(game, SensorPosition.LEFT, localPatient);
                     
                     break;
                 case SensorPosition.RIGHT:
                     direction = pairingData.rightSensorDirection;
                     sensorAddress = pairingData.rightSensorAddress;
                     gravity = pairingData.rightSensorGravity;
-                    SetDefaultBaseValue(game); // TODO: Fetch base value from DB
+                    LoadDefaultBaseValue(game, SensorPosition.RIGHT, localPatient); // TODO: Fetch base value from DB
                     break;
             }
             
         }
 
-
-        void SetDefaultBaseValue(MiniGame game)
+        void LoadDefaultBaseValue(MiniGame game, SensorPosition position, LocalPatientData localPatient)
         {
-            if (game == MiniGame.Dumbbell) baseValue = 10f;
-            if (game == MiniGame.Wheelchair) baseValue = 20f;
-            if (game == MiniGame.Cycle) baseValue = 20f;
+            switch (game)
+            {
+                case MiniGame.JumpJump:
+                    baseValue = localPatient.JumpJumpPerformance;
+                    break;
+                case MiniGame.WheelChair:
+                    baseValue = localPatient.WheelchairPerformanceLeft;
+                    break;
+                case MiniGame.Cycle:
+                    baseValue = localPatient.CyclePerformance;
+                    break;
+            }
+        }
+
+        void SetDefaultBaseValue(MiniGame game, SensorPosition position)
+        {
+            if (DBManager.Instance.currentPatient == null)
+            {
+                if (game == MiniGame.JumpJump) baseValue = 50f;
+                if (game == MiniGame.WheelChair) baseValue = 50f;
+                if (game == MiniGame.Cycle) baseValue = 100f;
+            }
+            else
+            {
+                if (position == SensorPosition.LEFT)
+                {
+                    if (game == MiniGame.JumpJump) baseValue = DBManager.Instance.currentPatient.FindGamePerformance("Jump Jump") == null ? 50f : DBManager.Instance.currentPatient.FindGamePerformance("Jump Jump").leftInputPerformance;
+                    if (game == MiniGame.WheelChair) baseValue = DBManager.Instance.currentPatient.FindGamePerformance("WheelChair") == null ? 50f : DBManager.Instance.currentPatient.FindGamePerformance("WheelChair").leftInputPerformance;
+                    if (game == MiniGame.Cycle) baseValue = DBManager.Instance.currentPatient.FindGamePerformance("Cycle") == null ? 100f : DBManager.Instance.currentPatient.FindGamePerformance("Cycle").leftInputPerformance;
+                }
+                else if (position == SensorPosition.RIGHT)
+                {
+                    if (game == MiniGame.JumpJump) baseValue = DBManager.Instance.currentPatient.FindGamePerformance("Jump Jump") == null ? 50f : DBManager.Instance.currentPatient.FindGamePerformance("Jump Jump").rightInputPerformance;
+                    if (game == MiniGame.WheelChair) baseValue = DBManager.Instance.currentPatient.FindGamePerformance("WheelChair") == null ? 50f : DBManager.Instance.currentPatient.FindGamePerformance("WheelChair").rightInputPerformance;
+                    if (game == MiniGame.Cycle) baseValue = DBManager.Instance.currentPatient.FindGamePerformance("Cycle") == null ? 100f : DBManager.Instance.currentPatient.FindGamePerformance("Cycle").rightInputPerformance;
+                }
+            }
         }
 
         public void WheelchairControlEvent(SensorDataReceived sensorData)
@@ -67,6 +102,34 @@ namespace Game.Sensor
                 WheelchairLowPassFiltRotation(sensorData);
                 WheelchairRotationToGameInput();
             }
+        }
+
+        public void DumbbellControlEvent(SensorDataReceived sensorData)
+        {
+            if (sensorAddress == sensorData.deviceAddress)
+            {
+                MotionLowPassFiltRotation(sensorData);
+                MotionToGameInput();
+            }
+        }
+        
+        public void MotionToGameInput()
+        {
+            if (value > 1000)
+            {
+                ResetValue();
+            }
+            else
+            {
+                value += averageValue > 15 ? averageValue : 0;
+            }
+        }
+
+        public void ResetValue()
+        {
+            dataWindow.Clear();
+            averageValue = 0;
+            value = 0;
         }
         
         public void DumbbellControlEvent1(SensorDataReceived sensorData)
@@ -93,16 +156,20 @@ namespace Game.Sensor
             // if (ax < -gravity) ax = -gravity;
             // else if (ax > gravity) ax = gravity;
             //
-            // if (Calculation.IsDownX(sensorData) && !Calculation.IsMove(sensorData)){
-            //     angleStart = Mathf.Acos(ax / gravity) * Mathf.Rad2Deg;
-            //     angleEnd = angleStart;
-            // }
-            // else
-            // {
-            //     angleEnd = Calculation.ComplementaryFilterRotationY(sensorData.gyroY, sensorData.accX, angleEnd, CFWeightAcc, gravity);
-            // }
+            int sign = 1;
             
-            angleEnd = Calculation.ComplementaryFilterRotationY(sensorData.gyroY, sensorData.accX, angleEnd, CFWeightAcc, gravity);
+            if (Calculation.IsDownX(sensorData) && !Calculation.IsMove(sensorData)){
+                dataWindow.Clear();
+                
+                sign = sensorData.accX > 0 ? 1 : -1;
+                
+                angleStart = 0;
+                angleEnd = angleStart;
+            }
+            
+            angleEnd = Calculation.ComplementaryFilterRotationY(sensorData.gyroY, sensorData.accX, angleEnd, CFWeightAcc, sign * gravity);
+            
+            // angleEnd = Calculation.ComplementaryFilterRotationY(sensorData.gyroY, sensorData.accX, angleEnd, CFWeightAcc, gravity);
         
             if (dataWindow.Count < lowPassWindowSize)
             {
@@ -119,23 +186,52 @@ namespace Game.Sensor
 
         private void DumbbellRotationToGameInput1()
         {
-            averageValue = Mathf.Clamp(averageValue, 0, baseValue);
-            value = averageValue / baseValue;
+            if (averageValue > 10)
+            {
+                averageValue = Mathf.Clamp(averageValue, 0, 150);
+                value = averageValue / baseValue;
+            }
+            else
+            {
+                value = 0;
+            }
         }
         
         private void DumbbellRotationToGameInput2(SensorDataReceived sensorData) //JumpJump
         {
             float rotate = sensorData.gyroY * Mathf.Sign(sensorData.accX);
-            if (rotate >= -15f) // up
+            if (rotate > 10f) // up
             {
-                averageValue = Mathf.Clamp(averageValue, 0, baseValue);
+                averageValue = Mathf.Clamp(averageValue, 0, 150);
                 value = averageValue / baseValue;
             }
-            else // down
+            else if (rotate < -10f) // down
             {
                 value = -1;
             }
+            else
+            {
+                value = 0;
+            }
         }
+        
+        
+        private void MotionLowPassFiltRotation(SensorDataReceived sensorData)
+        {
+            if (dataWindow.Count < lowPassWindowSize)
+            {
+                dataWindow.Enqueue(Calculation.AccMotion(sensorData));
+            }
+            else
+            {
+                dataWindow.Dequeue();
+                dataWindow.Enqueue(Calculation.AccMotion(sensorData));
+            }
+            
+            averageValue = Calculation.AverageQueue(dataWindow);
+        }
+
+        
         
         private void WheelchairLowPassFiltRotation(SensorDataReceived sensorData)
         {
@@ -187,7 +283,7 @@ namespace Game.Sensor
                 case RotationDirection.YPOSITIVE:
                     if (Mathf.Abs(averageValue) > baseValue)
                     {
-                        value = Mathf.Clamp(averageValue / baseValue, 0f, 1f);
+                        value = Calculation.ToWheelchairRacingInput(Mathf.Abs(averageValue), baseValue);
                         value = Mathf.Sign(averageValue) * value;
                     }
                     else
@@ -200,7 +296,7 @@ namespace Game.Sensor
                 case RotationDirection.ZNEGATIVE:
                     if (Mathf.Abs(averageValue) > baseValue)
                     {
-                        value = Mathf.Clamp(averageValue / baseValue, 0f, 1f);
+                        value = Calculation.ToWheelchairRacingInput(Mathf.Abs(averageValue), baseValue);
                         value = -Mathf.Sign(averageValue) * value;
                     }
                     else
@@ -220,9 +316,9 @@ namespace Game.Sensor
             
             if (sensorAddress == sensorData.deviceAddress)
             {
-                Debug.Log("Haoming: " + averageValue);
-                averageValue = Calculation.AccSum(sensorData);
-                value = Calculation.ToCycleInput(averageValue, baseValue);
+                // Debug.Log("Haoming: " + averageValue);
+                averageValue = Calculation.AccMotion(sensorData);
+                value = Calculation.ToCycleRacingInput(averageValue, baseValue);
             }
         }
         

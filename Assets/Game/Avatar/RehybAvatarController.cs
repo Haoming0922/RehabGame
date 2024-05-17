@@ -10,12 +10,11 @@ using UnityEngine;
 
 public class ReHybAvatarController : MonoBehaviour
 {
-    [SerializeField] InworldCharacter m_CurrentCharacter;
+    public InworldCharacter m_CurrentCharacter;
     
     private void Update()
     {
     }
-
     [ContextMenu("UserSpeak")]
     public void UserSpeak(string goal)
     {
@@ -24,6 +23,7 @@ public class ReHybAvatarController : MonoBehaviour
         m_CurrentCharacter.SendTrigger(goal,true);
     }
     
+
     [ContextMenu("TherapistSpeak")]
     public void TherapistSpeak(string goal)
     {

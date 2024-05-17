@@ -20,7 +20,7 @@ namespace Game.Bicycle
 		public TurnController turnController;
 
 		float horizontalInput = 0f;
-		float vereticallInput = 0f;
+		float verticalInput = 0f;
 
 		public Transform handle;
 		bool braking;
@@ -87,10 +87,16 @@ namespace Game.Bicycle
 				LayOnTurn();
 				DownPresureOnSpeed();
 				EmitTrail();
+				HandleFlip();
 				UpdateUI();
-				gameManager.UpdatePlayerData(rb.velocity.magnitude, vereticallInput);
 			}
 
+		}
+		
+		void HandleFlip()
+		{
+			Quaternion targetRotation = Quaternion.Euler(0, transform.eulerAngles.y, 0);
+			transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, 2 * Time.deltaTime);
 		}
 
 		private void UpdateUI()
@@ -98,49 +104,40 @@ namespace Game.Bicycle
 			// if (!isUser) return;
 			float speed = Mathf.Clamp(rb.velocity.magnitude, 0, 50);
 			UIUpdater.UpdateSpeedUI(speed, speed / maxSpeed);
-			UIUpdater.UpdateForceUI(vereticallInput);
+			UIUpdater.UpdateForceUI(verticalInput);
 		}
 		
 		
 		private void AutoDrive()
 		{
-			if (transform.position.z - trackGenerator.userbike.position.z > 100)
+			if (transform.position.z - trackGenerator.userbike.position.z > 30)
 			{
-				vereticallInput = Mathf.Min(0.1f, sensorManager.GetData(SensorPosition.LEFT));	
+				verticalInput += UnityEngine.Random.Range(0.5f, 1f);
 			}
-			else if (transform.position.z - trackGenerator.userbike.position.z < -100)
+			else if (transform.position.z - trackGenerator.userbike.position.z < -20)
 			{
-				vereticallInput = Mathf.Max(5f,sensorManager.GetData(SensorPosition.LEFT));
+				verticalInput += UnityEngine.Random.Range(1f, 1.1f);
 			}
 			else
 			{
-				vereticallInput = UnityEngine.Random.Range(0.1f, 5f);
+				verticalInput = UnityEngine.Random.Range(0.5f, 1.2f);
 			}
+			
+			verticalInput = Mathf.Clamp(verticalInput, 0, verticalInput);
 			
 			horizontalInput = Mathf.Clamp(turnController.horizontalInput / maxSteeringAngle, 0 , 1);
 		}
 		
 		public void GetInput()
 		{
-			if (sensorManager.GetData(SensorPosition.LEFT) > 0.1f)
-			{
-				vereticallInput = sensorManager.GetData(SensorPosition.LEFT); // 0 to 5
-				horizontalInput = Mathf.Clamp(turnController.horizontalInput / maxSteeringAngle, 0 , 1);
-			}
-			else
-			{
-				vereticallInput = 0;
-				horizontalInput = 0;
-			}
-			// horizontalInput = -0.05f;
-			// horizontalInput = Input.GetAxis("Horizontal");
-			// vereticallInput = Input.GetAxis("Vertical");
-			// braking = Input.GetKey(KeyCode.Space);
+			verticalInput = sensorManager.GetData(SensorPosition.LEFT);
+			horizontalInput = Mathf.Clamp(turnController.horizontalInput / maxSteeringAngle, 0 , 1);
+			if(verticalInput > 0) gameManager.UpdatePlayerData(rb.velocity.magnitude, verticalInput);
 		}
 
 		public void HandleEngine()
 		{
-			backWheel.motorTorque = vereticallInput * motorforce;
+			backWheel.motorTorque = verticalInput * motorforce;
 			currentbrakeForce = braking ? brakeForce : 0f;
 			if (braking)
 			{
@@ -297,15 +294,43 @@ namespace Game.Bicycle
 			wheelTransform.position = pos;
 		}
 
+		private void OnTriggerStay(Collider other)
+		{
+			if (other.gameObject.CompareTag("Left1"))
+			{
+				rb.AddTorque(transform.up * maxSteeringAngle / 2, ForceMode.Force);
+			}
+			else if (other.gameObject.CompareTag("Left2"))
+			{
+				rb.AddTorque(transform.up * maxSteeringAngle / 2 / 4, ForceMode.Force);
+			}
+			else if (other.gameObject.CompareTag("Right1"))
+			{
+				rb.AddTorque(-transform.up * maxSteeringAngle / 2, ForceMode.Force);
+			}
+			else if (other.gameObject.CompareTag("Right2"))
+			{
+				rb.AddTorque(-transform.up * maxSteeringAngle / 2 / 4, ForceMode.Force);
+			}
+			else if (other.gameObject.CompareTag("MiddleLeft"))
+			{
+				rb.AddTorque(-transform.up * maxSteeringAngle / 2 / 4, ForceMode.Force);
+			}
+			else if (other.gameObject.CompareTag("MiddleRight"))
+			{
+				rb.AddTorque(transform.up * maxSteeringAngle / 2 / 4, ForceMode.Force);
+			}
+		}
+
 
 		// private void OnCollisionEnter(Collision other)
 		// {
-		// 	if (other.gameObject.CompareTag("Ground"))
-		// 	{
-		// 		Vector3 targetVelocityNormalized = other.gameObject.transform.rotation.eulerAngles.normalized;
-		// 		horizontalInput = Vector3.Angle(rb.velocity.normalized, targetVelocityNormalized);
-		// 		Debug.Log(horizontalInput + ", " + vereticallInput);
-		// 	}
+		// 	// if (other.gameObject.CompareTag("Ground"))
+		// 	// {
+		// 	// 	Vector3 targetVelocityNormalized = other.gameObject.transform.rotation.eulerAngles.normalized;
+		// 	// 	horizontalInput = Vector3.Angle(rb.velocity.normalized, targetVelocityNormalized);
+		// 	// 	Debug.Log(horizontalInput + ", " + vereticallInput);
+		// 	// }
 		//
 		// }
 	}

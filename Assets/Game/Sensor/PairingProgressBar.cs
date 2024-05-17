@@ -151,7 +151,7 @@ public class PairingProgressBar : MonoBehaviour
 				sensorAddress = data.deviceAddress;
 				m_FillAmount = 0;
 				ResetRotation();
-			}
+			} 
 		}
 	}
 	

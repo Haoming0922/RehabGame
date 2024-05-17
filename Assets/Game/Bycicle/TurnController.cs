@@ -12,12 +12,15 @@ namespace Game.Bicycle
         public Rigidbody rb;
         public WheelCollider wheel;
         public float horizontalInput = 0f;
-        float turnSmoothing = 0.1f;
+        float turnSmoothing = 0.3f;
         private float currentSteeringAngle = 0f;
         
         private Queue<Vector3> velocityQueue = new Queue<Vector3>();
 
         public GameManager Manager;
+        
+        public Transform currentTrackSegment;
+        public Camera gameCamera;
         
         private void Start()
         {
@@ -41,6 +44,7 @@ namespace Game.Bicycle
         {
             if (other.gameObject.CompareTag("Ground"))
             {
+                currentTrackSegment = other.gameObject.transform;
                 Turn(other.gameObject);
             }
         }
@@ -63,12 +67,13 @@ namespace Game.Bicycle
             }
         }
 
+        
         private void SlowDown()
         {
             rb.gameObject.GetComponent<BicycleVehicle>().enabled = false;
-            while (rb.velocity.magnitude > 1f)
+            while (rb.velocity.magnitude > .2f)
             {
-                rb.velocity = Vector3.Lerp(rb.velocity, Vector3.zero, 0.2f * Time.deltaTime);
+                rb.velocity = Vector3.Lerp(rb.velocity, Vector3.zero, 0.1f * Time.deltaTime);
                 rb.gameObject.transform.rotation = Quaternion.identity;
             }
 

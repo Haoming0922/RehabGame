@@ -12,95 +12,157 @@ namespace Game.Wheelchair
     public class WheelchairTurnController : MonoBehaviour
     {
         public Rigidbody rb;
-        private float horizontalInput = 0f;
-        float turnSmoothing = 0.05f;
-        public float currentSteeringAngle = 0f;
+        
+        public float turnForce = 1f;
 
-        public Vector3 velocity;
+        public float turning;
 
-        private Queue<Vector3> velocityQueue = new Queue<Vector3>();
+        // private Queue<Vector3> velocityQueue = new Queue<Vector3>();
 
         public GameManager Manager;
-        private void Start()
-        {
-        }
+
+        private Transform currentTrackSegment;
 
         private void Update()
         {
-            AverageVelocity();
+           
         }
 
         void FixedUpdate()
         {
-            // currentSteeringAngle = Mathf.Lerp(currentSteeringAngle, horizontalInput, turnSmoothing);
-            // // currentSteeringAngle = Mathf.Lerp(currentSteeringAngle, maxSteeringAngle * horizontalInput, turnSmoothing);
-            // Debug.Log(currentSteeringAngle);
+            Turn();
         }
 
         private void OnTriggerStay(Collider other)
         {
             if (other.gameObject.CompareTag("Ground"))
             {
-                Turn(other.gameObject);
+                currentTrackSegment = other.gameObject.transform;
+            }
+            
+            if (other.gameObject.CompareTag("Left1"))
+            {
+                rb.AddTorque(transform.up * turnForce, ForceMode.Force);
+            }
+            else if (other.gameObject.CompareTag("Left2"))
+            {
+                rb.AddTorque(transform.up * turnForce / 4, ForceMode.Force);
+            }
+            else if (other.gameObject.CompareTag("Right1"))
+            {
+                rb.AddTorque(-transform.up * turnForce, ForceMode.Force);
+            }
+            else if (other.gameObject.CompareTag("Right2"))
+            {
+                rb.AddTorque(-transform.up * turnForce / 4, ForceMode.Force);
+            }
+            else if (other.gameObject.CompareTag("MiddleLeft"))
+            {
+                rb.AddTorque(-transform.up * turnForce * 2f, ForceMode.Force);
+            }
+            else if (other.gameObject.CompareTag("MiddleRight"))
+            {
+                rb.AddTorque(transform.up * turnForce * 2f, ForceMode.Force);
             }
         }
+
+        
 
         private void OnTriggerEnter(Collider other)
         {
             if (other.gameObject.CompareTag("Finish"))
             {
+                SlowDown();
+
                 if (gameObject.CompareTag("Player"))
                 {
-                    Manager.playerWin = true;
+                    if (!Manager.ghostWin) Manager.playerWin = true;
                     Manager.gameEndEvent?.Invoke();
                 }
                 else
                 {
-                    Manager.playerWin = false;
-                    gameObject.GetComponent<Rigidbody>().velocity = Vector3.zero;
-                    gameObject.GetComponent<WheelchairController1D>().enabled = false;
+                    if(!Manager.playerWin) Manager.ghostWin = true;
                 }
             }
         }
 
-        private void Turn(GameObject go)
+        private void Turn()
         {
-            Vector3 targetVelocity = go.transform.forward;
-            targetVelocity.y = 0f;
-            Vector3 currentVelocity = GetAverageVelocity();
+            Vector3 currentVelocity = transform.forward;
             currentVelocity.y = 0f;
-            velocity = targetVelocity;
-
-            // velocity = Vector3.Lerp(currentVelocity, targetVelocity, Time.deltaTime).normalized;
-            // horizontalInput = Vector3.Dot( Vector3.Cross(targetVelocity, currentVelocity), Vector3.up) < 0 ? Vector3.Angle(currentVelocity, targetVelocity) : -Vector3.Angle(currentVelocity, targetVelocity);
+            Vector3 targetVelocity = currentTrackSegment.transform.forward;
+            targetVelocity.y = 0f;
+            turning = Vector3.Dot( Vector3.Cross(targetVelocity, currentVelocity), Vector3.up) < 0 ? Vector3.Angle(currentVelocity, targetVelocity) : -Vector3.Angle(currentVelocity, targetVelocity);
+            rb.AddTorque(transform.up * (turning *  turnForce), ForceMode.Force);
             // Debug.Log(targetVelocity + " " + currentVelocity);
         }
 
-        private void AverageVelocity()
+        
+        // public void ResetPosition(Transform bicycle)
+        // {
+        //     StartCoroutine(ResetPositionCoroutine(bicycle));
+        // }
+        //
+        // IEnumerator ResetPositionCoroutine(Transform bicycle)
+        // {
+        //     // while((bicycle.position - currentTrackSegment.GetChild(0).position).magnitude > 0.5f)
+        //     // {
+        //     //     bicycle.position = Vector3.Lerp(bicycle.position, currentTrackSegment.GetChild(0).position, Time.deltaTime);
+        //     //     bicycle.rotation = Quaternion.Lerp(bicycle.rotation,  currentTrackSegment.rotation, Time.deltaTime);
+        //     //     yield return null;
+        //     // }
+        //     
+        // }
+        
+        private void SlowDown()
         {
-            if (velocityQueue.Count < 10)
+            rb.gameObject.GetComponent<WheelchairController1D>().enabled = false;
+            while (rb.velocity.magnitude > .2f)
             {
-                velocityQueue.Enqueue(rb.velocity.normalized);
+                rb.velocity = Vector3.Lerp(rb.velocity, Vector3.zero, 0.1f * Time.deltaTime);
+                rb.gameObject.transform.rotation = Quaternion.identity;
             }
-            else
-            {
-                velocityQueue.Dequeue();
-                velocityQueue.Enqueue(rb.velocity.normalized);
-            }
+
+            rb.velocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            rb.isKinematic = true;
+            rb.constraints = RigidbodyConstraints.FreezePositionX | RigidbodyConstraints.FreezePositionY | RigidbodyConstraints.FreezePositionZ |
+                             RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezeRotationZ;
         }
 
-        private Vector3 GetAverageVelocity()
-        {
-            if (velocityQueue.Count == 0) return Vector3.zero;
-            Vector3 sum = Vector3.zero;
-            foreach (var velocity in velocityQueue)
-            {
-                sum += velocity;
-            }
-
-            sum /= velocityQueue.Count;
-            return sum.normalized;
-        }
+        // private void Reset()
+        // {
+        //     rb.transform.position = currentTrackSegment.transform.position + currentTrackSegment.transform.lossyScale / 2;
+        //     rb.transform.LookAt(rb.transform.position + currentTrackSegment.transform.forward);
+        // }
+        
+        
+        // private void AverageVelocity()
+        // {
+        //     if (velocityQueue.Count < 8)
+        //     {
+        //         velocityQueue.Enqueue(rb.velocity.normalized);
+        //     }
+        //     else
+        //     {
+        //         velocityQueue.Dequeue();
+        //         velocityQueue.Enqueue(rb.velocity.normalized);
+        //     }
+        //     
+        // }
+        //
+        // private Vector3 GetAverageVelocity()
+        // {
+        //     if (velocityQueue.Count == 0) return Vector3.zero;
+        //     Vector3 sum = Vector3.zero;
+        //     foreach (var velocity in velocityQueue)
+        //     {
+        //         sum += velocity;
+        //     }
+        //
+        //     sum /= velocityQueue.Count;
+        //     return sum.normalized;
+        // }
 
     }
 }

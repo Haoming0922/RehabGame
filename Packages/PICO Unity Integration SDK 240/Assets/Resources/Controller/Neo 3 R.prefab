@@ -23,6 +23,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8449525692238721171}
+  serializedVersion: 2
   m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
@@ -30,13 +31,13 @@ Transform:
   m_Children:
   - {fileID: 5822148990318121413}
   m_Father: {fileID: 0}
-  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &6288947943713207854
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
+    serializedVersion: 3
     m_TransformParent: {fileID: 9081911576199211561}
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 98595991fd68c5e419d1d37fed8658ff, type: 3}
@@ -83,6 +84,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -5439430077871529440, guid: 98595991fd68c5e419d1d37fed8658ff, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: -4365425836530490892, guid: 98595991fd68c5e419d1d37fed8658ff, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
@@ -96,6 +101,18 @@ PrefabInstance:
       value: Neo3_Controller_Right
       objectReference: {fileID: 0}
     m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 98595991fd68c5e419d1d37fed8658ff, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 9202479174731645555}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 98595991fd68c5e419d1d37fed8658ff, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6465803819032203205}
+    - targetCorrespondingSourceObject: {fileID: 8245864472737768373, guid: 98595991fd68c5e419d1d37fed8658ff, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2394182678425697692}
   m_SourcePrefab: {fileID: 100100000, guid: 98595991fd68c5e419d1d37fed8658ff, type: 3}
 --- !u!4 &1351744298325674262 stripped
 Transform:

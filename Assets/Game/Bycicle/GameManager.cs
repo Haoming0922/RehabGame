@@ -7,23 +7,23 @@ using TMPro;
 using UnityEngine;
 using Random = UnityEngine.Random;
 using Game.Util;
+using RehabDB;
+using UnityEngine.SceneManagement;
+using UnityEngine.InputSystem;
 
 namespace Game.Bicycle
 {
-    public class GameManager : MonoBehaviour
-    {
-                
+    public class GameManager : MonoBehaviour{
+        public AvatarLoader avatarLoader;
         public SensorManager sensorManager;
         
         private float timeCount = 0;
         private float timePeriod = 0;
 
         private float avgSpeed;
-        private float performance;
+        private float leftPerformance;
         private int coins;
-
         
-        public GameObject gamePlayUI;
         public GameObject gameEndUI;
         
         public Action gameEndEvent;
@@ -31,9 +31,20 @@ namespace Game.Bicycle
         public bool playerWin;
         public bool ghostWin;
         public GameState state;
-        public ReHybAvatarController AvatarController;
-
         public BicycleUIUpdater UIUpdater;
+
+        public bool fiveMinReminded = false;
+        public bool finishReminded = false;
+
+        public Transform player;
+        public Transform ghost;
+        
+                
+        public InputActionReference Reload;
+        public InputActionReference PauseGame;
+        public InputActionReference Exit;
+        private bool isPause;
+        
         
         // [Header("level Generator")] 
         // public int seed;
@@ -53,6 +64,11 @@ namespace Game.Bicycle
         
         void Start()
         {
+            if (DBManager.Instance.currentPatient != null)
+            {
+                avatarLoader.LoadAvatar(DBManager.Instance.currentPatient.UnityAvatar);
+            }
+            
             StartCoroutine(MoveToStart());
             gameEndEvent += OnGameEnd;
         }
@@ -61,40 +77,114 @@ namespace Game.Bicycle
         {
             gameEndEvent -= OnGameEnd;
         }
+        
+        private void OnEnable()
+        {
+            PauseGame.action.Enable();
+            Reload.action.Enable();
+            Exit.action.Enable();
+        }
+        
+        private void OnDisable()
+        {
+            PauseGame.action.Disable();
+            Reload.action.Disable();
+            Exit.action.Disable();
+        }
+        
 
         private void Update()
+        {
+            TimeCounter();
+            AvatarSpeak();
+            ControllerInput();
+        }
+
+
+        private void ControllerInput()
+        {
+            if (Exit.action.IsPressed()) SceneManager.LoadScene("Home");
+            if (Reload.action.IsPressed()) SceneManager.LoadScene("Cycle");
+            if (PauseGame.action.IsPressed())
+            {
+                if (isPause)
+                {
+                    isPause = false;
+                    Time.timeScale = 1;
+                }
+                else
+                {
+                    isPause = true;
+                    Time.timeScale = 0;
+                }
+            }
+        }
+        
+        private void TimeCounter()
         {
             if (state == GameState.PLAY)
             {
                 timePeriod += Time.deltaTime;
                 timeCount += Time.deltaTime;
             }
-
-            if (timePeriod > 30 && state == GameState.PLAY)
+        }
+        
+        private void AvatarSpeak()
+        {
+            if (timeCount > 180 && fiveMinReminded)
+            {
+                fiveMinReminded = true;
+                avatarLoader.Speak("three_min_reminder", new Dictionary<string, string>(){ {"player", DBManager.Instance.currentPatient.Name.Split(" ")[0]} });
+            }
+            else if (timeCount > 300 && finishReminded)
+            {
+                finishReminded = true;
+                avatarLoader.Speak("end_game_reminder", new Dictionary<string, string>(){ {"player", DBManager.Instance.currentPatient.Name.Split(" ")[0]} });
+            }
+            else if (timePeriod > 100)
             {
                 timePeriod = 0;
-                AvatarController.UserSpeak("middle_game");
+                if (player.position.z > ghost.position.z)
+                {
+                    avatarLoader.Speak("competition_status_faster", new Dictionary<string, string>(){ {"player", DBManager.Instance.currentPatient.Name.Split(" ")[0]} });
+                }
+                else
+                {
+                    avatarLoader.Speak("competition_status_slower", new Dictionary<string, string>(){ {"player", DBManager.Instance.currentPatient.Name.Split(" ")[0]} });
+                }
             }
-        }
+            else if (timeCount > 60) 
+            {
+                avatarLoader.Speak("come_on", new Dictionary<string, string>(){ {"player", DBManager.Instance.currentPatient.Name.Split(" ")[0]} });
+            }
 
+        }
 
         public void UpdatePlayerData(float speed, float input)
         {
-            avgSpeed = (avgSpeed + speed) / 2;
-            performance = (performance + input) / 2; // TODO: Performance = current AvgInput / past AvgInput
+            avgSpeed = avgSpeed ==  0 ? speed : (avgSpeed + speed) / 2;
+            leftPerformance = leftPerformance == 0 ? leftPerformance : (leftPerformance + input) / 2; // TODO: Performance = current AvgInput / past AvgInput
         }
-        
+
         private void OnGameEnd()
         {
             state = GameState.END;
-            StartCoroutine(UIUpdater.ShowGameEndUI(timeCount, avgSpeed, performance, coins));
+            StartCoroutine(UIUpdater.ShowGameEndUI(timeCount, avgSpeed, leftPerformance, coins));
             if (playerWin)
             {
-                AvatarController.UserSpeak("game_win");
+                avatarLoader.Speak("finish_round_win_competition", new Dictionary<string, string>(){ {"player", DBManager.Instance.currentPatient.Name.Split(" ")[0]} });
             }
             else
             {
-                AvatarController.UserSpeak("game_lose");
+                avatarLoader.Speak("finish_round_lose_competition", new Dictionary<string, string>(){ {"player", DBManager.Instance.currentPatient.Name.Split(" ")[0]} });
+            }
+            // DBManager.Instance.currentPatient.UpdateGameTask("Cycle", timeCount);
+            // DBManager.Instance.currentPatient.UpdateGamePerformance("Cycle", leftPerformance, 0f);
+
+            if (DBManager.Instance.currentPatient != null)
+            {
+                sensorManager.localPatient.CyclePerformance = (leftPerformance + sensorManager.localPatient.CyclePerformance) / 2;
+                DataSaver.SaveData(DBManager.Instance.currentPatient.Name + ".userInfo", sensorManager.localPatient);
             }
         }
         
@@ -103,23 +193,28 @@ namespace Game.Bicycle
             gameEndUI.SetActive(false);
             state = GameState.PREPARE;
             
-            AvatarController.UserSpeak("ask_move_sensor");
-            yield return new WaitForSeconds(5f);
+            yield return new WaitForSeconds(3f);
+            avatarLoader.Speak("intro_hand_paddle", new Dictionary<string, string>(){ {"player", DBManager.Instance.currentPatient.Name.Split(" ")[0]} });
+            yield return new WaitForSeconds(12f);
             UIUpdater.ShowMoveToStartUI();
-            yield return new WaitForSeconds(1f);
+            yield return new WaitForSeconds(4f);
             
             // TODO
-            // while (!(sensorManager.IsMove(SensorPosition.LEFT)))
-            // {
-            //     yield return null;
-            // }
+            float move = sensorManager.GetData(SensorPosition.LEFT);
+            while (move < 15)
+            {
+                move += sensorManager.GetData(SensorPosition.LEFT);
+                yield return null;
+            }
             
             yield return StartCoroutine(UIUpdater.ShowGameStartUI());
             state = GameState.PLAY;
         }
         
         
-
+        }
+        
+        
         #region Archive
 
         
@@ -229,4 +324,3 @@ namespace Game.Bicycle
         // }
         #endregion
     }
-}

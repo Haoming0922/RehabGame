@@ -12,7 +12,9 @@ using Unity.VisualScripting;
 public class WheelchairController : MonoBehaviour
 {
     public SensorManager sensorManager;
-
+    public GameManager2D gameManager2D;
+    public WheelchairUIUpdater2D UIUpdater2D;
+    
     public ReHybAvatarController AvatarController;
     
     public GameObject leftWheel;
@@ -35,6 +37,9 @@ public class WheelchairController : MonoBehaviour
     private InputAction rightAction;
     private InputAction joyStickAction;
     
+    private float leftInput2;
+    private float rightInput2;
+    
     private void Awake()
     {
         input = new WheelChairInput();
@@ -48,7 +53,9 @@ public class WheelchairController : MonoBehaviour
         leftAction.Enable();
         rightAction.Enable();
         joyStickAction.Enable();
-        StartCoroutine(Speak());
+        // StartCoroutine(Speak());
+        
+        wheelchairRigidbody.centerOfMass -= 3 * Vector3.down;
     }
 
     private void OnDisable()
@@ -60,10 +67,12 @@ public class WheelchairController : MonoBehaviour
 
     void Update()
     {
+        if(gameManager2D.state != GameState.PLAY) return;
+        
         float leftInput1 = leftAction.ReadValue<Vector2>()[1];
         float rightInput1 = rightAction.ReadValue<Vector2>()[1];
-        float leftInput2 = sensorManager.GetData(SensorPosition.LEFT);
-        float rightInput2 = sensorManager.GetData(SensorPosition.RIGHT);
+        leftInput2 = sensorManager.GetData(SensorPosition.LEFT);
+        rightInput2 = sensorManager.GetData(SensorPosition.RIGHT);
         // Debug.Log("leftInput2: " + leftInput2 + ", rightInput2: " + rightInput2);
 
         Vector2 joyStick = joyStickAction.ReadValue<Vector2>();
@@ -77,25 +86,29 @@ public class WheelchairController : MonoBehaviour
         rightInput = Mathf.Abs(rightInput1) > Mathf.Abs(rightInput2) ? rightInput1 : rightInput2;
         rightInput = Mathf.Abs(rightInput) > Mathf.Abs(rightInput3) ? rightInput : rightInput3;
         
-        textLeft.text = "Left  " + leftInput;
-        textRight.text = "Right  " + rightInput;
+        // textLeft.text = "Left  " + leftInput;
+        // textRight.text = "Right  " + rightInput;
 
         RotateWheel(leftWheel, leftInput * maxWheelRotationSpeed);
         RotateWheel(rightWheel, rightInput * maxWheelRotationSpeed);
 
         // Now you can use leftWheelSpeed and rightWheelSpeed to determine the movement and turning
         ApplyMovement(leftInput, rightInput);
+        
+        UIUpdater2D.UpdateForceUI((leftInput + rightInput)/2);
+        gameManager2D.UpdatePlayerData(leftInput2, rightInput2);
+
     }
 
-    private IEnumerator Speak()
-    {
-        yield return new WaitForSeconds(5f);
-        while (true)
-        {
-            AvatarController.UserSpeak("middle_game");
-            yield return new WaitForSeconds(60f);
-        }   
-    }
+    // private IEnumerator Speak()
+    // {
+    //     yield return new WaitForSeconds(5f);
+    //     while (true)
+    //     {
+    //         AvatarController.UserSpeak("middle_game");
+    //         yield return new WaitForSeconds(60f);
+    //     }   
+    // }
     
     
     // private void OnLeftInput(InputValue value)

@@ -8,7 +8,7 @@ namespace Game.Bicycle
 {
     public class MarkUpdater : MonoBehaviour
     {
-        private Transform bike;
+        public Transform bike;
         private Quaternion startRotation;
         private float startHeight;
         
@@ -19,7 +19,7 @@ namespace Game.Bicycle
 
         private void Update()
         {
-            transform.position = new Vector3(transform.position.x, startHeight, transform.position.z);
+            // transform.position = new Vector3(bike.position.x, startHeight, bike.position.z);
             transform.rotation = Quaternion.identity;
         }
     }

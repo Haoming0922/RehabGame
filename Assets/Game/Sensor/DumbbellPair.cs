@@ -77,7 +77,7 @@ namespace Game.Sensor
             {
                 SensorDataReceived filterData = LowPassFilter(data);
                 rotaionYEnd = Calculation.ComplementaryFilterRotationY(filterData.gyroY, filterData.accX, rotaionYEnd, CFWeightAcc, restGravity[currentSensorAddress]);
-                // Debug.Log("[Haoming] rotaionYEnd: " + rotaionYEnd + ", rotaionYStart: " + rotaionYStart);
+                // Debug.Log("[Haoming] rotaionYEnd: "½ + rotaionYEnd + ", rotaionYStart: " + rotaionYStart);
                 avatar.UpdateArmRotation(currentPairingPosition, rotaionYEnd - rotaionYStart);
             }
 

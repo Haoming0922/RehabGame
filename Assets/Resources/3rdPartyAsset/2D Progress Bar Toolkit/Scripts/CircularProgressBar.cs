@@ -6,7 +6,13 @@ using UnityEngine.UI;
 public class CircularProgressBar : MonoBehaviour {
 	[Header("Colors")]
 	[SerializeField] private Color m_MainColor = Color.white;
-	[SerializeField] private Color m_FillColor = Color.green;
+	[SerializeField] private Color m_FillColor_Below = Color.green;
+	[SerializeField] private Color m_FillColor_Above = Color.green;
+	[SerializeField] private int thresholdIdx;
+	
+	private Color m_FillColor;
+
+	
 	
 	[Header("General")]
 	[SerializeField] private int m_NumberOfSegments = 5;
@@ -19,7 +25,8 @@ public class CircularProgressBar : MonoBehaviour {
 	private List<Image> m_ProgressToFill = new List<Image> ();
 	private float m_SizeOfSegment;
 
-	private void Awake() {
+	private void Awake()
+	{
 		// Get images in Children
 		m_Image = GetComponentInChildren<Image>();
 		m_Image.color = m_MainColor;
@@ -41,7 +48,10 @@ public class CircularProgressBar : MonoBehaviour {
 			segmentImage.fillAmount = m_SizeOfSegment;
 
 			Image segmentFillImage = segmentImage.transform.GetChild (0).GetComponent<Image> ();
-			segmentFillImage.color = m_FillColor;
+			
+			if(i <= thresholdIdx) segmentFillImage.color = m_FillColor_Below;
+			else segmentFillImage.color = m_FillColor_Above;
+			
 			m_ProgressToFill.Add (segmentFillImage);
 
 			float zRot = m_StartAngle + i * ConvertCircleFragmentToAngle(m_SizeOfSegment) + i * m_SizeOfNotch;
@@ -50,7 +60,8 @@ public class CircularProgressBar : MonoBehaviour {
 	}
 
 	private void Update() {
-		for (int i = 0; i < m_NumberOfSegments; i++) {
+		for (int i = 0; i < m_NumberOfSegments; i++)
+		{
 			m_ProgressToFill [i].fillAmount = (m_FillAmount * ((m_EndAngle-m_StartAngle)/360)) - m_SizeOfSegment * i;
 		}
 	}
@@ -60,6 +71,8 @@ public class CircularProgressBar : MonoBehaviour {
 		m_FillAmount = amount;
 	}
 
+	
+	
 	private float NormalizeAngle(float angle) {
 		return Mathf.Clamp01(angle / 360f);
 	}

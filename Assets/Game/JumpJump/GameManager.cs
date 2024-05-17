@@ -7,27 +7,23 @@ using TMPro;
 using UnityEngine;
 using Random = UnityEngine.Random;
 using Game.Util;
+using RehabDB;
+using UnityEngine.InputSystem;
+using Pico;
+using Unity.XR.PXR;
+using UnityEngine.SceneManagement;
 
 namespace Game.JumpJump
 {
     public class GameManager : MonoBehaviour
     {
-        public ReHybAvatarController AvatarController;
         public SensorManager sensorManager;
-        public GameStateManager gameStateManager;
-
-        public JumpAnimation jumpAnimation;
         
         [Header("level Generator")] 
         public int seed;
         public List<GameObject> cubePrefs;
         public Transform firstCube;
         public int totalCubes;
-
-        [Header("Left/Right Control UI")] 
-        public TextMeshProUGUI textLeft;
-        public TextMeshProUGUI textRight;
-        public TextMeshProUGUI textGuide;
         
         private int currentCube = 0;
         private int lastCube = 0;
@@ -35,126 +31,149 @@ namespace Game.JumpJump
         
         public float MaxDistance { get; private set; }
         public SensorPosition currentController;
+        
+        public GameObject gameEndUI;
 
+        public Action gameEndEvent;
+
+        public GameState state;
+
+        public JumpUIUpdater UIUpdater;
+
+        public AvatarLoader avatarLoader;
+        
+                
+        private float timeCount = 0;
+        private float timePeriod = 0;
+
+        private float leftPerformance;
+        private float rightPerformance;
+        private int coins;
+
+        public Transform player;
+        
+        public InputActionReference Reload;
+        public InputActionReference PauseGame;
+        public InputActionReference Exit;
+        private bool isPause;
         
         void Start()
         {
-            gameStateManager.PrepareEvent += OnGameStart;
-            gameStateManager.PrepareEvent += DisablePlayerControl;
-
-            gameStateManager.PlayEvent += EnablePlayerControl;
-
-            gameStateManager.EndEvent += DisablePlayerControl;
-            
-            gameStateManager.SwitchGameState(GameState.PREPARE);
-            
-            jumpAnimation = GetComponent<JumpAnimation>();
-
-            StartCoroutine(Speak());
+            seed = Random.Range(1, 100);
+            GenerateLevels();
+            if (DBManager.Instance.currentPatient != null)
+            {
+                avatarLoader.LoadAvatar(DBManager.Instance.currentPatient.UnityAvatar);
+                // avatarLoader.SetupAvatarGame();
+            }
+            player.gameObject.SetActive(false);
+            player.gameObject.SetActive(true);
+            StartCoroutine(MoveToStart()); // TODO
+            gameEndEvent += OnGameEnd;
         }
 
+        private void OnEnable()
+        {
+            PauseGame.action.Enable();
+            Reload.action.Enable();
+            Exit.action.Enable();
+        }
+        
+        private void OnDisable()
+        {
+            PauseGame.action.Disable();
+            Reload.action.Disable();
+            Exit.action.Disable();
+        }
+        
         private void OnDestroy()
         {
-            gameStateManager.PrepareEvent -= OnGameStart;
-            gameStateManager.PrepareEvent -= DisablePlayerControl;
-            
-            gameStateManager.PlayEvent -= EnablePlayerControl;
-            
-            gameStateManager.EndEvent -= DisablePlayerControl;
+            gameEndEvent -= OnGameEnd;
         }
 
         // Update is called once per frame
         void Update()
         {
-            WinCheck();
+            TimeCounter();
+            AvatarSpeak();
+            ControllerInput();
         }
         
-        private IEnumerator Speak()
+
+        private void TimeCounter()
         {
-            yield return new WaitForSeconds(5f);
-            while (true)
+            if (state == GameState.PLAY)
             {
-                AvatarController.UserSpeak("middle_game");
-                yield return new WaitForSeconds(60f);
-            }   
-        }
-        
-        public void EnableCameraFollow()
-        {
-            GameObject.Find("CameraOffset").GetComponent<CameraFollow>().enabled = true;
+                timePeriod += Time.deltaTime;
+                timeCount += Time.deltaTime;
+            }
         }
 
-        public void DisableCameraFollow()
+        private void ControllerInput()
         {
-            GameObject.Find("CameraOffset").GetComponent<CameraFollow>().enabled = false;
+            if (Exit.action.IsPressed()) SceneManager.LoadScene("Home");
+            if (Reload.action.IsPressed()) SceneManager.LoadScene("Jump");
+            if (PauseGame.action.IsPressed())
+            {
+                if (isPause)
+                {
+                    isPause = false;
+                    Time.timeScale = 1;
+                }
+                else
+                {
+                    isPause = true;
+                    Time.timeScale = 0;
+                }
+            }
         }
 
-        
-        public void EnablePlayerControl()
-        {
-            GameObject.Find("Player").GetComponent<Player>().enabled = true;
-        }
 
-        public void DisablePlayerControl()
+        private void ReloadScene(InputAction.CallbackContext ctx)
         {
-            GameObject.Find("Player").GetComponent<Player>().enabled = false;
-        }
-
-        
-        
-        private void OnGameStart()
-        {
-            StartCoroutine(Prepare());
-        }
-        
-        private IEnumerator Prepare()
-        {
-            textLeft.gameObject.SetActive(false);
-            textRight.gameObject.SetActive(false);
-            textGuide.gameObject.SetActive(false);
-            
-            GenerateLevels();
-            yield return new WaitForSeconds(2f);
-            
-            textGuide.gameObject.SetActive(true);
-            textGuide.text = "Move to Jump";
-            yield return new WaitForSeconds(2f);
-            textGuide.text = "Ready?";
-            yield return new WaitForSeconds(1f);
-            textGuide.text = "3";
-            yield return new WaitForSeconds(1f);
-            textGuide.text = "2";
-            yield return new WaitForSeconds(1f);
-            textGuide.text = "1";
-            yield return new WaitForSeconds(1f);
-            textGuide.text = "Go";
-            yield return new WaitForSeconds(1f);
-            
-            textGuide.gameObject.SetActive(false);
-            SetControlSensor(null);
-            
-            gameStateManager.SwitchGameState(GameState.PLAY);
-            
-            yield return new WaitForSeconds(.5f);
+            SceneManager.LoadScene("Jump");
         }
 
         
+        private void AvatarSpeak()
+        {
+            if (currentCube == totalCubes / 2)
+            {
+                avatarLoader.Speak("mid_game_reminder", new Dictionary<string, string>(){ {"player", DBManager.Instance.currentPatient.Name.Split(" ")[0]} });
+            }
+            else if (currentCube == totalCubes - 15)
+            {
+                timePeriod = 0;
+                avatarLoader.Speak("middle_game",new Dictionary<string, string>(){ {"player", DBManager.Instance.currentPatient.Name.Split(" ")[0]} });
+            }
+            else if (currentCube == 10) 
+            {
+                avatarLoader.Speak("come_on", new Dictionary<string, string>(){ {"player", DBManager.Instance.currentPatient.Name.Split(" ")[0]} });
+            }
+        }
+        
+
+        public void UpdatePlayerData(float input)
+        {
+            if(input < 0.2f) return;
+            leftPerformance = leftPerformance == 0 ? leftPerformance : (leftPerformance + input) / 2; 
+            rightPerformance = rightPerformance == 0 ? rightPerformance : (rightPerformance + input) / 2; 
+
+            // if (position == SensorPosition.LEFT)
+            // {
+            //     leftPerformance = leftPerformance == 0 ? leftPerformance : (leftPerformance + input) / 2; 
+            // }
+            // else
+            // {
+            //     rightPerformance = rightPerformance == 0 ? rightPerformance : (rightPerformance + input) / 2; 
+            // }
+        }
         
         public void SetControlSensor(SensorPosition? position)
         {
             if (position != null) currentController = position.Value;
             else currentController =  currentCube % 2 == 0 ? SensorPosition.LEFT : SensorPosition.RIGHT;
-            switch (currentController)
-            {
-                case SensorPosition.LEFT:
-                    textLeft.gameObject.SetActive(true);
-                    textRight.gameObject.SetActive(false);
-                    break;
-                case SensorPosition.RIGHT:
-                    textLeft.gameObject.SetActive(false);
-                    textRight.gameObject.SetActive(true);
-                    break;
-            }
+            // UIUpdater.DisplayOneSide(currentController);
         }
         
         
@@ -172,24 +191,26 @@ namespace Game.JumpJump
         
         public Vector3 GetTargetPosition()
         {
-            Vector3 targetPosition = cubes[currentCube + 1].transform.GetChild(0).position;
-            targetPosition.y += 1;
-            return targetPosition;
+            if (currentCube + 1 < cubes.Count)
+            {
+                Vector3 targetPosition = cubes[currentCube + 1].transform.GetChild(0).position;
+                // targetPosition.y += 1f;
+                return targetPosition;
+            }
+            else return player.position + player.forward;
         }
 
         public void UpdateCurrentCube(int idx)
         {
-            if (GameStateManager.State == GameState.PLAY)
-            {
-                currentCube = idx;
-                SetControlSensor(null);
-                // Debug.Log(currentCube);
+            currentCube = idx;
+            // SetControlSensor(null);
+            // Debug.Log(currentCube);
 
-                if (lastCube < currentCube)
-                {
-                    lastCube = currentCube;
-                }
+            if (lastCube < currentCube)
+            {
+                lastCube = currentCube;
             }
+        
         }
         
         private void GenerateLevels()
@@ -202,25 +223,26 @@ namespace Game.JumpJump
             Random.InitState(seed);
 
             Transform lastCube = firstCube;
-            int cubeIdx = cubes.Count;
+            int cubeIdx = cubes.Count-1;
                 
             while (cubeIdx < totalCubes)
             {
                 int cubeInGroup = Random.Range(2, 10);
-                float totalRotation = Random.Range(-100f, 100f);
+                float totalRotation = Random.Range(-50f, 50f);
+                
                 for (int i = 0; i < cubeInGroup; i++)
                 {
-                    if (cubeIdx == totalCubes) return;
+                    if (cubeIdx == totalCubes) break;
 
                     GameObject cubePref = cubePrefs[Random.Range(0, cubePrefs.Count)];
                     GameObject newCube = Instantiate(cubePref, cubePref.transform.parent);
                     cubeIdx++;
 
                     newCube.transform.position = lastCube.position +
-                                                 lastCube.right * Random.Range(-10f, 10f) +
-                                                 lastCube.forward * Random.Range(6f, 15f) +
-                                                 new Vector3(0, Random.Range(-4f, 4f), 0);
-                    newCube.transform.Rotate(Random.Range(-10f, 10f), totalRotation / cubeInGroup * i, Random.Range(-5f, 5f));
+                                                 lastCube.right * Random.Range(-4f, 4f) +
+                                                 lastCube.forward * Random.Range(4f, 7f) +
+                                                 new Vector3(0, Random.Range(-.4f, .4f), 0);
+                    // newCube.transform.Rotate(Random.Range(-0.5f, 0.5f), totalRotation / cubeInGroup * i, Random.Range(-0.5f, 0.5f));
                     newCube.name = "Cube" + cubeIdx;
 
                     cubes.Add(newCube.transform);
@@ -232,29 +254,52 @@ namespace Game.JumpJump
                     
                     lastCube = newCube.transform;
                 }
+
             }
+
+            cubes[^1].gameObject.tag = "Finish";
+            Debug.Log(cubes[^1].gameObject.tag);
+        }
+
+        public void DisableCurrentLastCube(int idx)
+        {
+            if(idx < 0 || idx >= cubes.Count) return;
+            cubes[idx].gameObject.SetActive(false);
         }
         
-        
-        
-        private void WinCheck()
+        private IEnumerator MoveToStart()
         {
-            if (currentCube == cubes.Count - 1)
+            gameEndUI.SetActive(false);
+            state = GameState.PREPARE;
+            
+            yield return new WaitForSeconds(3f);
+            avatarLoader.Speak("intro_jump_jump", new Dictionary<string, string>(){ {"player", DBManager.Instance.currentPatient.Name.Split(" ")[0]} });
+            yield return new WaitForSeconds(6f);
+            UIUpdater.ShowMoveToStartUI();
+            yield return new WaitForSeconds(3f);
+            
+            float move = sensorManager.GetData(SensorPosition.LEFT);
+            while (move < 5)
             {
-                textGuide.gameObject.SetActive(true);
-                textLeft.gameObject.SetActive(false);
-                textRight.gameObject.SetActive(false);
-                textGuide.text = "Congratulations";
-                jumpAnimation.Win();
-                
-                gameStateManager.SwitchGameState(GameState.END);
+                move += Mathf.Max(sensorManager.GetData(SensorPosition.LEFT), sensorManager.GetData(SensorPosition.RIGHT));
+                yield return null;
             }
+            
+            yield return StartCoroutine(UIUpdater.ShowGameStartUI());
+            // SetControlSensor(null);
+            state = GameState.PLAY;
         }
         
-        public void ToggleText(bool toggle)
+        private void OnGameEnd()
         {
-            textLeft.gameObject.SetActive(toggle);
-            textRight.gameObject.SetActive(toggle);
+            state = GameState.END;
+            StartCoroutine(UIUpdater.ShowGameEndUI(timeCount, (rightPerformance/sensorManager.GetBaseline(SensorPosition.RIGHT) + leftPerformance/sensorManager.GetBaseline(SensorPosition.LEFT)) / 2 ,(rightPerformance  + leftPerformance) / 2 , coins));
+            avatarLoader.Speak("finish_round_without_competition", new Dictionary<string, string>(){ {"player", DBManager.Instance.currentPatient.Name.Split(" ")[0]} });
+            
+            // DBManager.Instance.currentPatient.UpdateGameTask("Jump Jump", timeCount);
+            DBManager.Instance.currentPatient.UpdateGamePerformance("Jump Jump", leftPerformance, rightPerformance);
         }
+        
+        
     }
 }

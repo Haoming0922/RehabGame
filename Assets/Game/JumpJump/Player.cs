@@ -5,6 +5,7 @@ using Game.Avatar;
 using TMPro;
 using UnityEngine;
 using Game.Sensor;
+using Game.Util;
 
 namespace Game.JumpJump
 {
@@ -13,6 +14,8 @@ namespace Game.JumpJump
     {
         public SensorManager sensorManager;
         public GameManager gameManager;
+        public JumpUIUpdater UIUpdater;
+        
         public Rigidbody player;
         public GameObject curve;
         
@@ -24,6 +27,12 @@ namespace Game.JumpJump
         private bool isOnGround = true;
 
         private JumpAnimation jumpAnimation;
+
+        private int currentCube;
+
+        private float jumpTimeStep;
+
+        public CameraFollow cameraFollow;
         
         void Start()
         {
@@ -32,37 +41,79 @@ namespace Game.JumpJump
             // SetMass();
             jumpAnimation = GetComponent<JumpAnimation>();
             jumpAnimation.Idle();
+            jumpTimeStep = Time.time;
         }
         
 
         private void Update()
         {
-            SensorJump();
-            // keyBoardInput();
+            if (gameManager.state == GameState.PLAY)
+            {
+                SensorJump(); // TODO
+                // keyBoardInput();
+                UIUpdater.UpdateForceUI(force);
+            }
         }
 
         private void SensorJump()
         {
-            float input = sensorManager.GetData(gameManager.currentController);
-
-            if (input > 0)
+            if (isOnGround)
             {
-                force = input;
+                force = sensorManager.GetData(SensorPosition.LEFT) + sensorManager.GetData(SensorPosition.RIGHT);
+                UIUpdater.DisplayOneSide();
+                if (IsJump())
+                {
+                    // DrawCurve(jumpPosition);
+                    UIUpdater.DisplayJumpUI(false);
+                    gameManager.UpdatePlayerData(force);
+                    StartCoroutine(MoveAlongCurve(jumpPosition));
+                    force = 0;
+                    // jumpTimeStep = Time.time;
+                }
             }
-            
-            if (input < 0 && IsJump() && isOnGround)
+            else
             {
-                gameManager.ToggleText(false);
-                StartCoroutine(MoveAlongCurve(jumpPosition));
+                UIUpdater.DisplayJumpUI(false);
+                sensorManager.ResetData();
                 force = 0;
             }
+            
+            // //
+            // if (input > 0)
+            // {
+            //     force = input;
+            // }
+
+            // if (Time.time - jumpTimeStep > 3f && isOnGround)
+            // {
+            //     UIUpdater.DisplayOneSide();
+            //     Debug.Log("JumpJump Intervals: " + (Time.time - jumpTimeStep));
+            //     if (IsJump())
+            //     {
+            //         Debug.Log("JumpJump Force: " + force);
+            //         // DrawCurve(jumpPosition);
+            //         UIUpdater.DisplayJumpUI(false);
+            //         gameManager.UpdatePlayerData(force);
+            //         StartCoroutine(MoveAlongCurve(jumpPosition));
+            //         force = 0;
+            //         jumpTimeStep = Time.time;
+            //     }
+            // }
+            // else
+            // {
+            //     UIUpdater.DisplayJumpUI(false);
+            //     force = 0;
+            // }
+            //
+
         }
+        
 
         private void keyBoardInput()
         {
             if (Input.GetKey(KeyCode.J) && isOnGround)
             {
-                force += 0.01f;
+                force += 0.1f;
                 // if (force >= 0.2 && (jumpPosition - transform.position).magnitude > 2f)
                 // {
                 //     DrawCurve(jumpPosition);
@@ -71,7 +122,8 @@ namespace Game.JumpJump
 
             if (!Input.GetKey(KeyCode.J) && IsJump() && isOnGround)
             {
-                gameManager.ToggleText(false);
+                UIUpdater.DisplayJumpUI(false);
+                gameManager.UpdatePlayerData(force);
                 StartCoroutine(MoveAlongCurve(jumpPosition));
                 force = 0;
             }
@@ -82,18 +134,22 @@ namespace Game.JumpJump
 
         private IEnumerator MoveAlongCurve(Vector3 jumpPosition)
         {
-            for (int i = 0; i < curve.transform.childCount; i++)
-            {
-                curve.transform.GetChild(i).gameObject.SetActive(false);
-            }
+            
+            // for (int i = 0; i < curve.transform.childCount; i++)
+            // {
+            //     curve.transform.GetChild(i).gameObject.SetActive(false);
+            // }
 
             // Bezier Curve
+            float height = Mathf.Max(transform.position.y, jumpPosition.y);
             Vector3 p0 = transform.position;
-            Vector3 p1 = new Vector3(transform.position.x, transform.position.y + 5, transform.position.z);
-            Vector3 p2 = new Vector3(jumpPosition.x, jumpPosition.y + 6, jumpPosition.z);
+            Vector3 p1 = new Vector3(transform.position.x, height+ 5f, transform.position.z + 1f);
+            Vector3 p2 = new Vector3(jumpPosition.x, height + 6f, jumpPosition.z + 4f);
             Vector3 p3 = jumpPosition;
 
             // this.GetComponent<Rigidbody>().useGravity = false;
+
+            cameraFollow.enabled = false;
             
             float t = 0;
             while (t < 1)
@@ -112,8 +168,29 @@ namespace Game.JumpJump
                 transform.position = bt;
                 //transform.Rotate(rotationAngle * Time.deltaTime);
                 t += 1f * Time.deltaTime;
+                // if (currentCube < gameManager.totalCubes - 1)
+                // {
+                //     transform.LookAt(GetLookAt(transform.position));
+                // }
                 yield return null;
             }
+
+            // t = 0;
+            // while (t < 1)
+            // {
+            //     Vector3 targetLookAt = Vector3.Lerp(transform.position + transform.forward,
+            //         gameManager.GetTargetPosition(), Time.deltaTime);
+            //     transform.LookAt(targetLookAt);
+            //     t += 1f * Time.deltaTime;
+            // }
+
+            // if (currentCube < gameManager.totalCubes - 1)
+            // {
+            //     gameManager.SetControlSensor(null);
+            // }
+            Debug.Log("A" + currentCube);
+
+            cameraFollow.enabled = true;
 
             // this.GetComponent<Rigidbody>().useGravity = true;
         }
@@ -129,8 +206,8 @@ namespace Game.JumpJump
         {
             // Bezier Curve
             Vector3 p0 = transform.position;
-            Vector3 p1 = new Vector3(transform.position.x, transform.position.y + 10, transform.position.z + 3);
-            Vector3 p2 = new Vector3(jumpPosition.x, jumpPosition.y + 6, jumpPosition.z);
+            Vector3 p1 = new Vector3(transform.position.x, transform.position.y + 10, transform.position.z);
+            Vector3 p2 = new Vector3(jumpPosition.x, jumpPosition.y + 10, jumpPosition.z + 1);
             Vector3 p3 = jumpPosition;
             
             for (int i = 0; i < curve.transform.childCount; i++)
@@ -166,7 +243,7 @@ namespace Game.JumpJump
             // targetForce = Mathf.Clamp(targetForce, 0f, 1f);
             // return currentPosition + force / targetForce * (targetPosition - currentPosition);
             
-            bool isJump = force > 0.5f ? true : false;
+            bool isJump = force > 1000f;
 
             if (isJump)
             {
@@ -180,10 +257,22 @@ namespace Game.JumpJump
         {
             if (other.gameObject.CompareTag("Ground"))
             {
-                gameManager.UpdateCurrentCube(other.gameObject.transform.parent.GetSiblingIndex());
                 isOnGround = true;
+                currentCube = other.gameObject.transform.parent.GetSiblingIndex();
+                gameManager.UpdateCurrentCube(currentCube);
+                gameManager.DisableCurrentLastCube(currentCube-1);
                 // jumpAnimation.Idle();
                 //cam.LookAt(transform.position);
+            }
+        }
+        
+        private void OnCollisionEnter(Collision other)
+        {
+            if (other.transform.parent.gameObject.CompareTag("Finish"))
+            {
+                // Debug.Log("Finish");
+                gameManager.gameEndEvent?.Invoke();
+                gameObject.GetComponent<Player>().enabled = false;
             }
         }
         
@@ -204,11 +293,12 @@ namespace Game.JumpJump
 ;            }
         }
 
-        public Vector3 GetLookAt()
+        public Vector3 GetLookAt(Vector3 currentPosition_)
         {
-            Vector3 currentPosition = transform.position;
-            Vector3 targetPosition = gameManager.GetTargetPosition();
-            return (currentPosition + targetPosition) / 2;
+            Vector3 dir = gameManager.GetTargetPosition();
+            dir.y = currentPosition_.y;
+            dir = Vector3.Lerp(transform.position + transform.forward, dir, Time.deltaTime);
+            return dir;
         }
     }
 

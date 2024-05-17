@@ -1,20 +1,19 @@
-﻿
-using System;
-using System.Collections.Generic;
-using Game.Util;
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
+﻿using MongoDB.Bson.Serialization.Attributes;
+using Realms;
 
-[BsonIgnoreExtraElements]
-public class Performance
+namespace RehabDB
 {
-    [BsonElement("game")]
-    public MiniGame game;
+    public class Performance :RealmObject
+    {
+        [BsonElement("gameType")]
+        public string gameType { get; set; }
     
-    [BsonElement("leftInputPerformance")]
-    public float leftInputPerformance;
+        [BsonElement("leftInputPerformance")]
+        public float leftInputPerformance { get; set; }
     
-    [BsonElement("rightInputPerformance")]
-    public float rightInputPerformance;
-    
+        [BsonElement("rightInputPerformance")]
+        public float rightInputPerformance { get; set; }
+    }
+
 }
+  

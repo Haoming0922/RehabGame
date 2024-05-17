@@ -12,6 +12,12 @@ TagManager:
   - Straight
   - Right
   - Start
+  - Left1
+  - Left2
+  - Right1
+  - Right2
+  - MiddleLeft
+  - MiddleRight
   layers:
   - Default
   - TransparentFX
