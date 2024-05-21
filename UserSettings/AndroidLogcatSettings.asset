@@ -1,9 +1,9 @@
 {
-    "m_SelectedDeviceId": "PA7L50MGFB190208W",
+    "m_SelectedDeviceId": "PA7J50PGFA220010W",
     "m_SelectedProcess": {
         "deviceId": "PA7L50MGFB190208W",
         "name": "com.DTUGazeITLab.Rehab",
-        "processId": 4997,
+        "processId": 12066,
         "exited": false
     },
     "m_SelectedPriority": 4,
@@ -24,6 +24,36 @@
             "deviceId": "PA7L50MGFB190208W",
             "name": "com.DTUGazeITLab.Rehab",
             "processId": 4997,
+            "exited": false
+        },
+        {
+            "deviceId": "PA7L50MGFB190208W",
+            "name": "com.DTUGazeITLab.Rehab",
+            "processId": 8765,
+            "exited": false
+        },
+        {
+            "deviceId": "PA7L50MGFB190208W",
+            "name": "com.DTUGazeITLab.Rehab",
+            "processId": 8768,
+            "exited": false
+        },
+        {
+            "deviceId": "PA7L50MGFB190208W",
+            "name": "com.DTUGazeITLab.Rehab",
+            "processId": 8769,
+            "exited": false
+        },
+        {
+            "deviceId": "PA7L50MGFB190208W",
+            "name": "com.DTUGazeITLab.Rehab",
+            "processId": 12064,
+            "exited": false
+        },
+        {
+            "deviceId": "PA7L50MGFB190208W",
+            "name": "com.DTUGazeITLab.Rehab",
+            "processId": 12066,
             "exited": false
         }
     ],

@@ -82,7 +82,7 @@ namespace Game.Bicycle
                 yield return null;
             }
             
-            strength = (strength - 1) * 100;
+            strength = strength * 100;
             evaluationCanvas.SetActive(true);
             // evaluationCanvas.transform.GetChild(0).GetChild(0).GetChild(0).Find("TimeText").GetComponent<TextMeshProUGUI>().text = (int) seconds / 60 + ":" + (int) seconds % 60 + ":" +
             // (int)((seconds - (int)seconds) * 100);
@@ -90,8 +90,9 @@ namespace Game.Bicycle
             evaluationCanvas.transform.GetChild(0).GetChild(0).GetChild(0).Find("TimeText").GetComponent<TextMeshProUGUI>().text = timeSpan.ToString(@"hh\:mm\:ss");
             evaluationCanvas.transform.GetChild(0).GetChild(0).GetChild(0).Find("SpeedText").GetComponent<TextMeshProUGUI>().text =
                 speed.ToString("0.0") + " KM/H";
-            evaluationCanvas.transform.GetChild(0).GetChild(0).GetChild(0).Find("PerformanceText").GetComponent<TextMeshProUGUI>()
-                .text = strength > 0 ? "+ " + strength.ToString("0.0") + "%" : "+ 0%";
+            evaluationCanvas.transform.GetChild(0).GetChild(0).GetChild(0).Find("PerformanceText")
+                .GetComponent<TextMeshProUGUI>()
+                .text = strength.ToString("0.0") + "%";
             // evaluationCanvas.transform.GetChild(0).GetChild(0).GetChild(0).Find("CoinsText").GetComponent<TextMeshProUGUI>().text =
             //     "+ " + coins;
             

@@ -57,6 +57,7 @@ namespace Game.Bicycle
 
 		private float speedFactor;
 
+
 		// Start is called before the first frame update
 		void Start()
 		{
@@ -78,8 +79,7 @@ namespace Game.Bicycle
 			if (gameManager.state == GameState.PLAY)
 			{
 				if (isUser) GetInput();
-				else AutoDrive();
-				
+				AutoTurn();
 				HandleEngine();
 				HandleSteering();
 				UpdateWheels();
@@ -106,37 +106,55 @@ namespace Game.Bicycle
 			UIUpdater.UpdateSpeedUI(speed, speed / maxSpeed);
 			UIUpdater.UpdateForceUI(verticalInput);
 		}
-		
-		
-		private void AutoDrive()
+
+		private void AutoTurn()
 		{
-			if (transform.position.z - trackGenerator.userbike.position.z > 30)
-			{
-				verticalInput += UnityEngine.Random.Range(0.5f, 1f);
-			}
-			else if (transform.position.z - trackGenerator.userbike.position.z < -20)
-			{
-				verticalInput += UnityEngine.Random.Range(1f, 1.1f);
-			}
-			else
-			{
-				verticalInput = UnityEngine.Random.Range(0.5f, 1.2f);
-			}
-			
-			verticalInput = Mathf.Clamp(verticalInput, 0, verticalInput);
-			
 			horizontalInput = Mathf.Clamp(turnController.horizontalInput / maxSteeringAngle, 0 , 1);
 		}
+		
+		public IEnumerator PastDrive()
+		{
+			int idx = 0;
+			while (idx < sensorManager.localPatient.CyclePerformanceString.Length)
+			{
+				verticalInput = sensorManager.GetCyclePastData(idx);
+				yield return new WaitForSeconds(0.5f);
+				idx += 3;
+			}
+		}
+
+
+		public IEnumerator DefaultDrive()
+		{
+			while (true)
+			{
+				if (transform.position.z - trackGenerator.userbike.position.z > 30)
+				{
+					verticalInput = UnityEngine.Random.Range(0f, 0.1f);
+				}
+				else if (transform.position.z - trackGenerator.userbike.position.z < -30)
+				{
+					verticalInput = UnityEngine.Random.Range(1f, 2f);
+				}
+				else
+				{
+					verticalInput = UnityEngine.Random.Range(0.4f, 0.8f);
+				}
+
+				yield return new WaitForSeconds(0.1f);
+			}
+		}
+		
 		
 		public void GetInput()
 		{
 			verticalInput = sensorManager.GetData(SensorPosition.LEFT);
-			horizontalInput = Mathf.Clamp(turnController.horizontalInput / maxSteeringAngle, 0 , 1);
 			if(verticalInput > 0) gameManager.UpdatePlayerData(rb.velocity.magnitude, verticalInput);
 		}
 
 		public void HandleEngine()
 		{
+			gameObject.GetComponent<Rigidbody>().AddForce(Vector3.forward * (verticalInput * motorforce), ForceMode.Force);
 			backWheel.motorTorque = verticalInput * motorforce;
 			currentbrakeForce = braking ? brakeForce : 0f;
 			if (braking)

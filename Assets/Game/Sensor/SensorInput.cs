@@ -56,13 +56,16 @@ namespace Game.Sensor
             switch (game)
             {
                 case MiniGame.JumpJump:
-                    baseValue = localPatient.JumpJumpPerformance;
+                    baseValue = 50f;
+                    // baseValue = localPatient.JumpJumpPerformance;
                     break;
                 case MiniGame.WheelChair:
-                    baseValue = localPatient.WheelchairPerformanceLeft;
+                    baseValue = 50f;
+                    // baseValue = localPatient.WheelchairPerformanceLeft;
                     break;
                 case MiniGame.Cycle:
-                    baseValue = localPatient.CyclePerformance;
+                    baseValue = 40f;
+                    // baseValue = localPatient.CyclePerformance;
                     break;
             }
         }

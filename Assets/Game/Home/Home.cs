@@ -147,6 +147,11 @@ public class Home : MonoBehaviour
     {
         SceneManager.LoadScene("CyclePair");
     }
+    
+    public void ROMMeasure()
+    {
+        SceneManager.LoadScene("ROMMeasure");
+    }
 
     public void ShowText()
     {

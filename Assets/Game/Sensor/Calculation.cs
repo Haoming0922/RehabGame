@@ -37,7 +37,7 @@ namespace Game.Sensor
         public static float ToCycleRacingInput(float currentAcc, float baseAcc)
         {
             if (currentAcc < 15f) return 0;
-            return Mathf.Clamp(currentAcc / (baseAcc * 0.8f), 0f , 5f);
+            return Mathf.Clamp(currentAcc / baseAcc, 0f , 5f);
         }
         
         public static bool IsRaise(SensorDataReceived data)

@@ -44,7 +44,10 @@ namespace Game.Bicycle
         public InputActionReference PauseGame;
         public InputActionReference Exit;
         private bool isPause;
-        
+
+        private float sensorInput;
+
+        private string sensorInputString;
         
         // [Header("level Generator")] 
         // public int seed;
@@ -164,6 +167,17 @@ namespace Game.Bicycle
         {
             avgSpeed = avgSpeed ==  0 ? speed : (avgSpeed + speed) / 2;
             leftPerformance = leftPerformance == 0 ? leftPerformance : (leftPerformance + input) / 2; // TODO: Performance = current AvgInput / past AvgInput
+            sensorInput = input;
+        }
+
+        private IEnumerator RecordInput()
+        {
+            while (true)
+            {
+                // sensorManager.localPatient.CyclePerformanceList.Add(sensorInput);
+                sensorInputString += sensorInput.ToString("0.0");
+                yield return new WaitForSeconds(0.5f);
+            }
         }
 
         private void OnGameEnd()
@@ -183,8 +197,9 @@ namespace Game.Bicycle
 
             if (DBManager.Instance.currentPatient != null)
             {
-                sensorManager.localPatient.CyclePerformance = (leftPerformance + sensorManager.localPatient.CyclePerformance) / 2;
-                DataSaver.SaveData(DBManager.Instance.currentPatient.Name + ".userInfo", sensorManager.localPatient);
+                LocalPatientData newData =
+                    new LocalPatientData(DBManager.Instance.currentPatient.Name, sensorInputString);
+                DataSaver.SaveData(DBManager.Instance.currentPatient.Name + ".userInfo", newData);
             }
         }
         
@@ -209,8 +224,11 @@ namespace Game.Bicycle
             
             yield return StartCoroutine(UIUpdater.ShowGameStartUI());
             state = GameState.PLAY;
+            timeCount = 0;
+            StartCoroutine(RecordInput());
+            if(sensorManager.localPatient != null) StartCoroutine(ghost.gameObject.GetComponent<BicycleVehicle>().PastDrive());
+            else StartCoroutine(ghost.gameObject.GetComponent<BicycleVehicle>().DefaultDrive());
         }
-        
         
         }
         

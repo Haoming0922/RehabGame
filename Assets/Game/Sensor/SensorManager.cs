@@ -48,11 +48,21 @@ namespace Game.Sensor
 
         private void LoadPatient()
         {
-            localPatient = new LocalPatientData();
             if (DBManager.Instance.currentPatient != null)
             {
-                LocalPatientData p = (LocalPatientData) DataSaver.LoadData(DBManager.Instance.currentPatient.Name + ".userInfo", typeof(LocalPatientData));
-                if (p != null) localPatient = p;
+                localPatient = (LocalPatientData) DataSaver.LoadData(DBManager.Instance.currentPatient.Name + ".userInfo", typeof(LocalPatientData));
+            }
+        }
+
+        public float GetCyclePastData(int idx)
+        {
+            if (idx < localPatient.CyclePerformanceString.Length)
+            {
+                return float.Parse(localPatient.CyclePerformanceString.Substring(idx, 3));
+            }
+            else
+            {
+                return 1f;
             }
         }
 
