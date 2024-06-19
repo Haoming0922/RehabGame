@@ -26,7 +26,7 @@ namespace RehabDB
         IEnumerator StartAsync()
         {
             //realm Credentials
-            var myRealmAppId = "rehybunity-uklpqky";
+            var myRealmAppId = "";
 
             //create and config realm
             var app = App.Create(myRealmAppId);
@@ -38,18 +38,17 @@ namespace RehabDB
             //app = App.Create(appConfig);
             
             //connect realm instance
-            var userTask = app.LogInAsync(Credentials.EmailPassword("s220056@dtu.dk", "sujuCY13"));
+            var userTask = app.LogInAsync(Credentials.EmailPassword("", ""));
             yield return new WaitUntil(() => userTask.IsCompleted);
 
             //connect to mongodb atlas
             var user = userTask.Result;
-            client = user.GetMongoClient("mongodb-atlas");
-            database = client.GetDatabase("HDT_exercise");
-            _collection = database.GetCollection<Patient>("patientProfile");
+            client = user.GetMongoClient("");
+            database = client.GetDatabase("");
+            _collection = database.GetCollection<Patient>("");
 
             //find patient
-            // Task<Patient> patientTask = GetPatientDataAsync("patient_1@test.com", "123321");
-            Task<Patient> patientTask = GetPatientDataAsync("sfsdfsdfsdf", "123456");
+            Task<Patient> patientTask = GetPatientDataAsync("", "");
             yield return new WaitUntil(() => patientTask.IsCompleted);
 
             var patient = patientTask.Result;
