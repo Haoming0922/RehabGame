@@ -32,7 +32,7 @@ namespace RehabDB2
             //    Debug.Log(p.name);
             //}
 
-            Task<Patient> patientTask = GetPatientByEmail("Natalie@test.com");
+            Task<Patient> patientTask = GetPatientByEmail("");
             yield return new WaitUntil(() => patientTask.IsCompleted);
             var patient = patientTask.Result;
             Debug.Log(patient.name);
@@ -43,7 +43,7 @@ namespace RehabDB2
 
         public async Task<List<Patient>> GetAllPaitent()
         {
-            string url = "http://localhost:8090/patient/allPatient";
+            string url = "";
 
             UnityWebRequest request = await GetRequest(url);
             if (request.result == UnityWebRequest.Result.ConnectionError ||
@@ -64,7 +64,7 @@ namespace RehabDB2
 
         public async Task<Patient> GetPatientByEmail(string email)
         {
-            string url = "http://localhost:8090/patient/findPatient";
+            string url = "";
             UnityWebRequest request = await PostRequest(url, email);
 
             if (request.result == UnityWebRequest.Result.ConnectionError ||
@@ -87,7 +87,7 @@ namespace RehabDB2
         //update performance
         public async void SavePatientPerformance(Patient p, string gameType, float leftvalue, float rightvalue)
         {
-            string url = "http://localhost:8090/patient/UpdatePatientPerformance";
+            string url = "";
             Performance performance = new Performance();
             performance.gameType = gameType;
             performance.left = leftvalue;
@@ -122,7 +122,7 @@ namespace RehabDB2
 
         public async void SaveTaskPerformance(Patient p, string taskId, float leftvalue, float rightvalue)
         {
-            string url = "http://localhost:8090/patient/tasks";
+            string url = "";
             List<GameTask> patientTaskList = p.Tasks;
             GameTask updatedTask = new GameTask();
             foreach (GameTask gameTask in patientTaskList)
