@@ -30,8 +30,7 @@ namespace Game.Sensor
         public static float ToWheelchairRacingInput(float currentAcc, float baseAcc)
         {
             if (currentAcc < 15f) return 0;
-            if(currentAcc > 30f) return Mathf.Clamp(currentAcc / baseAcc, 0.8f ,2f);
-            else return Mathf.Clamp(currentAcc / baseAcc, 0.3f ,2f);
+            return Mathf.Clamp(currentAcc / baseAcc, 0.3f ,2f);
         }
         
         public static float ToCycleRacingInput(float currentAcc, float baseAcc)

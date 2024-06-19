@@ -14,9 +14,9 @@ public class AvatarOnBike : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        // avatarURL = "https://models.readyplayer.me/65253564f3a2574b36a5ec18.glb";
-        if (DBManager.Instance.currentPatient != null) avatarURL = DBManager.Instance.currentPatient.Avatar;
-        else avatarURL = "https://models.readyplayer.me/65253564f3a2574b36a5ec18.glb";
+        avatarURL = "https://models.readyplayer.me/65ef464b0d14e501b71877e7.glb";
+        // if (DBManager.Instance.currentPatient != null) avatarURL = DBManager.Instance.currentPatient.Avatar;
+        // else avatarURL = "https://models.readyplayer.me/65253564f3a2574b36a5ec18.glb";
         
         // Create bike
         bike = GameObject.Find("GhostBike");

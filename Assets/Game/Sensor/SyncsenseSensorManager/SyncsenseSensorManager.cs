@@ -354,3 +354,4 @@ public class SyncsenseSensorManager : Singleton<SyncsenseSensorManager>
     }
     
 }
+

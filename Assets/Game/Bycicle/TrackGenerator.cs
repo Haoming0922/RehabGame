@@ -150,7 +150,7 @@ public class TrackGenerator : MonoBehaviour
         
         lastPosition = currentPosition;
     }
-
+    
     public IEnumerator RegenerateTracks()
     {
         Vector3 currentPosition = lastPosition;
