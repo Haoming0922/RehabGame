@@ -1,10 +1,8 @@
-﻿using System.Collections.Generic;
-
-
-
-
-namespace RehabDB2
+﻿namespace DataBase2
 {
+
+     using System.Collections.Generic;
+
      public class Patient
      {
           public string id { get; set; }
@@ -54,10 +52,9 @@ namespace RehabDB2
 
           public List<Performance> performance { get; set; }
 
-          public float TotalExerciseHours { get; set; }
+          public double TotalExerciseHours { get; set; }
 
-          public float WeekExerciseHours { get; set; }
-
+          public double WeekExerciseHours { get; set; }
 
      }
 }

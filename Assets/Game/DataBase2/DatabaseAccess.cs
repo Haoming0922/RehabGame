@@ -1,17 +1,16 @@
-using System;
-using System.IO;
-using System.Collections;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
-using UnityEngine.Networking;
-using Newtonsoft.Json;
 
 
-
-namespace RehabDB2
+namespace DataBase2
 {
+
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Text;
+    using System.Threading.Tasks;
+    using UnityEngine;
+    using UnityEngine.Networking;
+    using Newtonsoft.Json;
+
     public class DatabaseAccess : MonoBehaviour
     {
 
@@ -32,12 +31,18 @@ namespace RehabDB2
             //    Debug.Log(p.name);
             //}
 
+
+
+
             Task<Patient> patientTask = GetPatientByEmail("Natalie@test.com");
             yield return new WaitUntil(() => patientTask.IsCompleted);
             var patient = patientTask.Result;
             Debug.Log(patient.name);
 
             SavePatientPerformance(patient, "WheelChair", 30.0f, 30.0f);
+            GameTask gameTask = patient.Tasks[3];
+            Performance newPerformance = new Performance("Cycle", 4.0f, 4.0f, "05/24/2024", "05/24/2024", 10.0);
+            SaveTaskPerformance(patient.patientID, gameTask, newPerformance);
 
         }
 
@@ -120,24 +125,19 @@ namespace RehabDB2
 
         }
 
-        public async void SaveTaskPerformance(Patient p, string taskId, float leftvalue, float rightvalue)
+        public async void SaveTaskPerformance(string patientID, GameTask currentTask, Performance newPerformance)
         {
             string url = "http://localhost:8090/patient/tasks";
-            List<GameTask> patientTaskList = p.Tasks;
-            GameTask updatedTask = new GameTask();
-            foreach (GameTask gameTask in patientTaskList)
+            //operate task
+            currentTask.performance.Add(newPerformance);
+            var requestData = new
             {
-                if (gameTask._id == taskId)
-                {
-                    //operate task
-
-                    updatedTask = gameTask;
-                    break;
-                }
-            }
+                patientID = patientID,
+                taskinfo = currentTask
+            };
 
             //update performance in tasks
-            UnityWebRequest request = await PostRequest(url, updatedTask);
+            UnityWebRequest request = await PostRequest(url, requestData);
             if (request.result == UnityWebRequest.Result.ConnectionError ||
                 request.result == UnityWebRequest.Result.ProtocolError)
             {

@@ -1,6 +1,4 @@
-﻿
-
-namespace RehabDB2
+﻿namespace DataBase2
 {
     public class Contact
     {
@@ -12,5 +10,4 @@ namespace RehabDB2
 
         public string phoneNumber { get; set; }
     }
-
 }

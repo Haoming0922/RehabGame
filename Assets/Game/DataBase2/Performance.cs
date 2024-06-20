@@ -1,10 +1,6 @@
-﻿
-
-
-
-
-namespace RehabDB2
+﻿namespace DataBase2
 {
+
     public partial class Performance
     {
 
@@ -13,7 +9,20 @@ namespace RehabDB2
         public float right { get; set; }
         public string startTime { get; set; }
         public string endTime { get; set; }
-        public float duration { get; set; }
-    }
+        public double duration { get; set; }
 
+        public Performance()
+        {
+        }
+
+        public Performance(string gameType, float left, float right, string startTime, string endTime, double duration)
+        {
+            this.gameType = gameType;
+            this.left = left;
+            this.right = right;
+            this.startTime = startTime;
+            this.endTime = endTime;
+            this.duration = duration;
+        }
+    }
 }

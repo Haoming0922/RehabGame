@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-
-
-
-namespace RehabDB2
+﻿
+namespace DataBase2
 {
+    using System;
+    using System.Collections.Generic;
+
+
     public class GameTask
     {
         public string _id { get; set; }
